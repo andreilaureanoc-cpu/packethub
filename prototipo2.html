@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Protótipo de detalhe de uma camada do modelo OSI.">
+    <title>OSI-Explorer | Detalhe da camada</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="prototipos.css">
+</head>
+<body>
+    <header class="prototype-header">
+        <div class="prototype-shell prototype-nav">
+            <a class="prototype-brand" href="prototipo1.html"><img src="images/logo-camadas.svg" alt="Logo OSI-Explorer"> OSI-Explorer</a>
+            <nav class="prototype-links" aria-label="Navegação dos protótipos">
+                <a href="prototipo1.html">Início</a>
+                <a class="current" href="prototipo2.html">Camada detalhada</a>
+                <a href="prototipo3.html">Comparar</a>
+            </nav>
+        </div>
+    </header>
+    <main class="prototype-shell detail-layout">
+        <aside class="detail-sidebar">
+            <h2>Camadas OSI</h2>
+            <nav aria-label="Lista de camadas">
+                <a href="#camada">07 Aplicação <span>07</span></a>
+                <a href="#camada">06 Apresentação <span>06</span></a>
+                <a href="#camada">05 Sessão <span>05</span></a>
+                <a class="active" href="#camada">04 Transporte <span>04</span></a>
+                <a href="#camada">03 Rede <span>03</span></a>
+                <a href="#camada">02 Enlace <span>02</span></a>
+                <a href="#camada">01 Física <span>01</span></a>
+            </nav>
+        </aside>
+        <section class="detail-main" id="camada">
+            <div class="breadcrumb"><a href="prototipo1.html">Início</a> &rsaquo; Camadas OSI &rsaquo; Transporte</div>
+            <div class="detail-banner">
+                <div>
+                    <div class="prototype-kicker">Guia de estudos / camada 04</div>
+                    <h1 class="prototype-heading">Transporte</h1>
+                </div>
+                <div class="layer-badge">Entrega ponta a ponta</div>
+            </div>
+            <div class="detail-objectives"><strong>Objetivo desta página</strong><span>Entender como a camada 4 entrega dados entre aplicações.</span><span>Reconhecer TCP, UDP e o conceito de portas.</span></div>
+            <p class="prototype-copy">A camada de Transporte conecta aplicações de origem e destino. Ela organiza os dados, controla o fluxo e pode garantir que cada segmento seja entregue corretamente.</p>
+            <div class="detail-cards">
+                <article class="detail-card detail-card-wide">
+                    <h2>O que esta camada faz?</h2>
+                    <p>Imagine uma mensagem grande sendo enviada pela rede. A camada de Transporte divide essa mensagem em segmentos, identifica as portas dos serviços e acompanha a entrega até o destino.</p>
+                    <div class="detail-facts">
+                        <div class="detail-fact"><strong>Segmentação</strong><small>Divide os dados em unidades menores.</small></div>
+                        <div class="detail-fact"><strong>Confiabilidade</strong><small>Confirma e reorganiza os segmentos.</small></div>
+                        <div class="detail-fact"><strong>Multiplexação</strong><small>Usa portas para separar serviços.</small></div>
+                    </div>
+                </article>
+                <article class="detail-card">
+                    <h2>Principais protocolos</h2>
+                    <p>Escolha um protocolo para entender seu comportamento na entrega de dados.</p>
+                    <div class="protocol-list"><span>TCP</span><span>UDP</span><span>QUIC</span><span>SCTP</span></div>
+                </article>
+                <article class="detail-card detail-card-wide detail-takeaway">
+                    <h2>Resumo rápido</h2>
+                    <p>Quando um arquivo chega dividido e precisa ser reordenado, confirmado ou direcionado para o serviço certo, a camada de Transporte está participando do processo.</p>
+                </article>
+                <article class="detail-card">
+                    <h2>Unidade de dados</h2>
+                    <p>Na camada de Transporte, a informação recebe o nome de <strong>segmento</strong>. Ele carrega dados e informações de controle.</p>
+                </article>
+            </div>
+        </section>
+    </main>
+    <footer class="prototype-footer"><div class="prototype-shell"><span>Protótipo 2 / Detalhe de camada</span><span>OSI-Explorer · Projeto acadêmico</span></div></footer>
+</body>
+</html>

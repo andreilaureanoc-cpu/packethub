@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="Protótipo inicial do portal OSI-Explorer.">
+	<title>OSI-Explorer | Protótipo inicial</title>
+	<link rel="stylesheet" href="styles.css">
+	<link rel="stylesheet" href="prototipos.css">
+</head>
+<body>
+	<header class="prototype-header">
+		<div class="prototype-shell prototype-nav">
+			<a class="prototype-brand" href="prototipo1.html"><img src="images/logo-camadas.svg" alt="Logo OSI-Explorer"> OSI-Explorer</a>
+			<nav class="prototype-links" aria-label="Navegação dos protótipos">
+				<a class="current" href="prototipo1.html">Início</a>
+				<a href="prototipo2.html">Camada detalhada</a>
+				<a href="prototipo3.html">Comparar</a>
+			</nav>
+		</div>
+	</header>
+	<main class="prototype-shell">
+		<section class="home-intro">
+			<div>
+				<div class="prototype-kicker">Guia introdutório de redes</div>
+				<h1 class="prototype-heading">O que é o modelo OSI?</h1>
+				<p class="prototype-copy">O modelo OSI organiza a comunicação de rede em sete camadas. Use este guia para entender o papel de cada uma, reconhecer seus protocolos e investigar problemas com mais clareza.</p>
+				<div class="home-actions">
+					<a class="prototype-button prototype-button-dark" href="prototipo2.html">Começar pelo Transporte &rarr;</a>
+					<a class="prototype-button prototype-button-light" href="#sumario">Ver o sumário</a>
+				</div>
+			</div>
+			<div class="stack-visual" aria-label="Representação visual das sete camadas OSI">
+				<div class="stack-line"><span>07</span> Aplicação</div>
+				<div class="stack-line"><span>06</span> Apresentação</div>
+				<div class="stack-line"><span>05</span> Sessão</div>
+				<div class="stack-line"><span>04</span> Transporte</div>
+				<div class="stack-line"><span>03</span> Rede</div>
+				<div class="stack-line"><span>02</span> Enlace</div>
+				<div class="stack-line"><span>01</span> Física</div>
+			</div>
+		</section>
+		<section class="learning-strip" id="sumario">
+			<div>
+				<div class="prototype-kicker">Antes de explorar</div>
+				<h2>O que você vai aprender</h2>
+			</div>
+			<ul class="objective-list">
+				<li><span>01</span> Identificar as sete camadas</li>
+				<li><span>02</span> Relacionar protocolos e funções</li>
+				<li><span>03</span> Acompanhar o caminho de um dado</li>
+			</ul>
+		</section>
+		<section class="home-layers">
+			<div class="section-label"><h2>As sete camadas em resumo</h2><a href="prototipo3.html">Abrir comparação &rarr;</a></div>
+			<div class="home-layer-grid">
+				<a class="home-layer-card" href="prototipo2.html"><b>07</b><strong>Aplicação</strong><small>Serviços usados diretamente pelo usuário</small></a>
+				<a class="home-layer-card" href="prototipo2.html"><b>06</b><strong>Apresentação</strong><small>Tradução, compressão e criptografia</small></a>
+				<a class="home-layer-card" href="prototipo2.html"><b>05</b><strong>Sessão</strong><small>Abertura, controle e encerramento</small></a>
+				<a class="home-layer-card" href="prototipo2.html"><b>04</b><strong>Transporte</strong><small>Segmentos, portas e entrega ponta a ponta</small></a>
+				<a class="home-layer-card" href="prototipo2.html"><b>03</b><strong>Rede</strong><small>Pacotes, endereços e roteamento</small></a>
+				<a class="home-layer-card" href="prototipo2.html"><b>02</b><strong>Enlace</strong><small>Quadros e comunicação na rede local</small></a>
+				<a class="home-layer-card" href="prototipo2.html"><b>01</b><strong>Física</strong><small>Bits, sinais e meios de transmissão</small></a>
+				<a class="home-layer-card home-layer-cta" href="prototipo3.html"><strong>Consultar tabela</strong><small>Compare função, unidade e protocolos</small></a>
+			</div>
+		</section>
+		<section class="flow-preview">
+			<div>
+				<div class="prototype-kicker">Uma ideia essencial</div>
+				<h2>Como os dados atravessam o modelo?</h2>
+				<p class="prototype-copy">No dispositivo de origem, a informação desce pelas camadas. No destino, ela sobe novamente até chegar à aplicação.</p>
+			</div>
+			<div class="flow-steps"><span>Dados</span><i>&darr;</i><span>Segmentos</span><i>&darr;</i><span>Pacotes</span><i>&darr;</i><span>Bits</span></div>
+		</section>
+	</main>
+	<footer class="prototype-footer"><div class="prototype-shell"><span>Protótipo 1 / Página inicial</span><span>OSI-Explorer · Projeto acadêmico</span></div></footer>
+</body>
+</html>

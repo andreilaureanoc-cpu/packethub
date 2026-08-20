@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Portal visual para explorar o modelo OSI, seus protocolos e componentes.">
+    <title>OSI-Explorer | Explore as camadas da rede</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="page">
+        <header>
+            <div class="shell nav">
+                <a class="brand" href="#inicio"><img class="brand-logo" src="images/logo-camadas.svg" alt="Logo OSI-Explorer"> OSI-Explorer</a>
+                <nav aria-label="Navegação principal">
+                    <a href="#inicio">Início</a>
+                    <a href="#camadas">Camadas</a>
+                    <a href="#protocolos">Protocolos</a>
+                    <a href="#sobre">Sobre o projeto</a>
+                </nav>
+                <a class="nav-cta" href="#camadas">Começar a explorar</a>
+            </div>
+        </header>
+
+        <main id="inicio">
+            <section class="hero shell">
+                <div class="hero-copy">
+                    <div class="eyebrow">Um mapa para entender redes</div>
+                    <h1>Descubra como a internet pensa.</h1>
+                    <p>Uma jornada visual pelas sete camadas do modelo OSI: do sinal físico às aplicações que você usa todos os dias.</p>
+                    <div class="hero-actions">
+                        <a class="button button-primary" href="#camadas">Explorar as camadas <span aria-hidden="true">&rarr;</span></a>
+                        <a class="button button-secondary" href="#protocolos">Ver protocolos</a>
+                    </div>
+                </div>
+            </section>
+
+            <section class="layers shell" id="camadas">
+                <div class="section-heading"><h2>As sete camadas</h2><span>01 &mdash; 07 / modelo de referência</span></div>
+                <div class="layer-grid">
+                    <a class="layer-card" href="#explorar"><span class="layer-number">07</span><span class="layer-name">Aplicação</span><span class="layer-type">Software</span></a>
+                    <a class="layer-card" href="#explorar"><span class="layer-number">06</span><span class="layer-name">Apresentação</span><span class="layer-type">Tradução</span></a>
+                    <a class="layer-card" href="#explorar"><span class="layer-number">05</span><span class="layer-name">Sessão</span><span class="layer-type">Conexão</span></a>
+                    <a class="layer-card active" href="#explorar"><span class="layer-number">04</span><span class="layer-name">Transporte</span><span class="layer-type">Entrega</span></a>
+                    <a class="layer-card" href="#explorar"><span class="layer-number">03</span><span class="layer-name">Rede</span><span class="layer-type">Roteamento</span></a>
+                    <a class="layer-card" href="#explorar"><span class="layer-number">02</span><span class="layer-name">Enlace</span><span class="layer-type">Quadros</span></a>
+                    <a class="layer-card" href="#explorar"><span class="layer-number">01</span><span class="layer-name">Física</span><span class="layer-type">Sinais</span></a>
+                </div>
+            </section>
+
+            <section class="explorer shell" id="explorar">
+                <div class="explorer-panel">
+                    <div class="panel-main">
+                        <div class="panel-kicker">Camada selecionada &middot; 04</div>
+                        <h2>Transporte</h2>
+                        <p>Garante que os dados cheguem ao destino de forma confiável, controlando o fluxo e dividindo as informações em segmentos.</p>
+                        <div class="protocols" id="protocolos"><span class="protocol">TCP</span><span class="protocol">UDP</span><span class="protocol">SCTP</span><span class="protocol">QUIC</span></div>
+                    </div>
+                    <aside class="panel-side">
+                        <h3 class="side-title">Em foco nesta camada</h3>
+                        <div class="fact"><span class="fact-icon">01</span><div><strong>Segmentação</strong><small>Divide os dados em partes menores</small></div></div>
+                        <div class="fact"><span class="fact-icon">02</span><div><strong>Controle de fluxo</strong><small>Equilibra a velocidade da comunicação</small></div></div>
+                        <div class="fact"><span class="fact-icon">03</span><div><strong>Portas</strong><small>Identificam serviços e processos</small></div></div>
+                    </aside>
+                </div>
+            </section>
+
+            <section class="quick shell" id="sobre">
+                <div class="section-heading"><h2>Continue sua descoberta</h2><span>atalhos de estudo</span></div>
+                <div class="quick-grid">
+                    <article class="quick-card"><h3>Glossário essencial</h3><p>Conceitos rápidos para consultar durante a exploração.</p><a class="text-link" href="#explorar">Abrir glossário &rarr;</a></article>
+                    <article class="quick-card"><h3>Compare camadas</h3><p>Observe como responsabilidades e protocolos se relacionam.</p><a class="text-link" href="#camadas">Ver comparação &rarr;</a></article>
+                    <article class="quick-card"><h3>Sobre o modelo OSI</h3><p>Entenda por que ele organiza a comunicação em rede.</p><a class="text-link" href="#inicio">Ler introdução &rarr;</a></article>
+                </div>
+            </section>
+        </main>
+        <footer><div class="shell footer-inner"><span>OSI-Explorer &copy; 2024 &middot; Projeto acadêmico</span><span>Aprender redes, uma camada por vez.</span></div></footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" role="img" aria-labelledby="title desc">
+  <title id="title">Logo OSI-Explorer em órbita</title>
+  <desc id="desc">Nós conectados em uma órbita, representando comunicação em rede.</desc>
+  <rect width="80" height="80" rx="18" fill="#138a8a"/>
+  <ellipse cx="40" cy="40" rx="25" ry="12" fill="none" stroke="#fff" stroke-width="3" transform="rotate(-35 40 40)"/>
+  <ellipse cx="40" cy="40" rx="25" ry="12" fill="none" stroke="#f7c948" stroke-width="3" transform="rotate(35 40 40)"/>
+  <circle cx="40" cy="40" r="7" fill="#f47c62" stroke="#fff" stroke-width="2"/>
+  <circle cx="19" cy="26" r="4" fill="#fff"/>
+  <circle cx="61" cy="26" r="4" fill="#fff"/>
+  <circle cx="40" cy="65" r="4" fill="#fff"/>
+</svg>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Protótipo comparativo para estudar as camadas OSI.">
+    <title>OSI-Explorer | Comparar camadas</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="prototipos.css">
+</head>
+<body>
+    <header class="prototype-header">
+        <div class="prototype-shell prototype-nav">
+            <a class="prototype-brand" href="prototipo1.html"><img src="images/logo-camadas.svg" alt="Logo OSI-Explorer"> OSI-Explorer</a>
+            <nav class="prototype-links" aria-label="Navegação dos protótipos">
+                <a href="prototipo1.html">Início</a>
+                <a href="prototipo2.html">Camada detalhada</a>
+                <a class="current" href="prototipo3.html">Comparar</a>
+            </nav>
+        </div>
+    </header>
+    <main class="prototype-shell compare-page">
+        <div class="compare-top">
+            <div>
+                <div class="prototype-kicker">Visão de conjunto / estudo rápido</div>
+                <h1 class="prototype-heading">Compare as camadas.</h1>
+                <p class="prototype-copy">Veja como cada nível responde por uma parte diferente da comunicação entre dispositivos. Esta tabela funciona como uma consulta rápida para revisar o modelo.</p>
+            </div>
+            <div class="legend"><span>Camada superior</span><span>Camada inferior</span></div>
+        </div>
+        <div class="compare-callout"><strong>Dica de estudo</strong><span>Leia de cima para baixo para acompanhar a intenção da aplicação até o meio físico.</span></div>
+        <h2 class="compare-title">Responsabilidades por camada</h2>
+        <div class="compare-table" role="table" aria-label="Comparação de camadas do modelo OSI">
+            <div class="compare-row header" role="row"><div>Camada</div><div>Função principal</div><div>Unidade / exemplos</div></div>
+            <div class="compare-row" role="row"><div>Aplicação</div><div>Serviços para o usuário</div><div>Dados · HTTP, DNS</div></div>
+            <div class="compare-row" role="row"><div>Apresentação</div><div>Formato e criptografia</div><div>Dados · TLS, JPEG</div></div>
+            <div class="compare-row" role="row"><div>Sessão</div><div>Controle de diálogos</div><div>Dados · RPC</div></div>
+            <div class="compare-row" role="row"><div>Transporte</div><div>Entrega ponta a ponta</div><div>Segmentos · TCP, UDP</div></div>
+            <div class="compare-row" role="row"><div>Rede</div><div>Endereçamento e rotas</div><div>Pacotes · IP, ICMP</div></div>
+            <div class="compare-row" role="row"><div>Enlace</div><div>Quadros na rede local</div><div>Quadros · Ethernet, ARP</div></div>
+            <div class="compare-row" role="row"><div>Física</div><div>Sinais e bits</div><div>Bits · cabo, rádio</div></div>
+        </div>
+        <div class="compare-note">
+            <article><h2>Uma forma de lembrar</h2><p>As camadas superiores lidam com o que a aplicação deseja fazer. As inferiores cuidam de como os bits percorrem o meio físico.</p></article>
+            <article><h2>Próximo passo</h2><p>Escolha uma camada na tela de detalhe para estudar seus componentes e protocolos com mais profundidade.</p></article>
+        </div>
+    </main>
+    <footer class="prototype-footer"><div class="prototype-shell"><span>Protótipo 3 / Comparação</span><span>OSI-Explorer · Projeto acadêmico</span></div></footer>
+</body>
+</html>
