@@ -27,10 +27,10 @@
 - **Documentação do Projeto:** [Ver pasta de documentação](docs/)
 
 ## Páginas / Telas da Aplicação (GitHub Pages)
-- 🏠 **Índice / Home:** [https://usuario.github.io/packethub/](https://usuario.github.io/packethub/)
-- 📊 **Dashboard:** [https://usuario.github.io/packethub/dashboard.html](https://usuario.github.io/packethub/dashboard.html)
-- 🔑 **Autenticação:** [https://usuario.github.io/packethub/login.html](https://usuario.github.io/packethub/login.html)
-- 📋 **Relatórios:** [https://usuario.github.io/packethub/reports.html](https://usuario.github.io/packethub/reports.html)
+- 🏠 **Índice / Home:** [https://usuario.github.io/packethub/](https://andreilaureanoc-cpu.github.io/packethub/)
+- 📊 **Dashboard:** [https://usuario.github.io/packethub/dashboard.html](https://andreilaureanoc-cpu.github.io/packethub/dashboard.html)
+- 🔑 **Autenticação:** [https://usuario.github.io/packethub/login.html](https://andreilaureanoc-cpu.github.io/packethub/login.html)
+- 📋 **Relatórios:** [https://usuario.github.io/packethub/reports.html](https://andreilaureanoc-cpu.io/packethub/reports.html)
 
 ## Funcionalidades Planejadas (Features)
 - [x] Visualização de métricas (CPU, Memória, Latência) e status de servidores no Dashboard com dados fictícios
