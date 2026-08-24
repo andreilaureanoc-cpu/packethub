@@ -1,15 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" role="img" aria-labelledby="title desc">
-  <title id="title">Logo OSI-Explorer em camadas</title>
-  <desc id="desc">Sete faixas coloridas representando as camadas do modelo OSI.</desc>
-  <rect width="80" height="80" rx="18" fill="#102a43"/>
-  <rect x="17" y="16" width="46" height="6" rx="3" fill="#f7c948"/>
-  <rect x="17" y="25" width="46" height="6" rx="3" fill="#f47c62"/>
-  <rect x="17" y="34" width="46" height="6" rx="3" fill="#138a8a"/>
-  <rect x="17" y="43" width="46" height="6" rx="3" fill="#65c3bd"/>
-  <rect x="17" y="52" width="46" height="6" rx="3" fill="#9bd8d2"/>
-  <circle cx="12" cy="19" r="2.5" fill="#fff"/>
-  <circle cx="12" cy="28" r="2.5" fill="#fff"/>
-  <circle cx="12" cy="37" r="2.5" fill="#fff"/>
-  <circle cx="12" cy="46" r="2.5" fill="#fff"/>
-  <circle cx="12" cy="55" r="2.5" fill="#fff"/>
+  <title id="title">PacketHub pacote capturado</title>
+  <desc id="desc">Pacote de rede dividido em camadas e marcado para inspeção.</desc>
+  <rect width="80" height="80" rx="18" fill="#193235"/>
+  <path d="M40 13 65 25 40 37 15 25 40 13Z" fill="#7ed8bb"/>
+  <path d="m15 25 25 12 25-12v10L40 47 15 35V25Z" fill="#42b39a"/>
+  <path d="m15 35 25 12 25-12v10L40 57 15 45V35Z" fill="#f3b44b"/>
+  <path d="m15 45 25 12 25-12v10L40 67 15 55V45Z" fill="#f06449"/>
+  <path d="M40 20v7m-14-2 14 7 14-7" fill="none" stroke="#f5fffb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

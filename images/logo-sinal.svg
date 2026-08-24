@@ -1,8 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" role="img" aria-labelledby="title desc">
-  <title id="title">Logo OSI-Explorer sinal</title>
-  <desc id="desc">Sinal de comunicação formado por linhas e pontos.</desc>
-  <rect width="80" height="80" rx="18" fill="#f7c948"/>
-  <path d="M17 49h10l6-18 8 29 7-20 5 9h10" fill="none" stroke="#102a43" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="17" cy="49" r="4" fill="#f47c62"/>
-  <circle cx="63" cy="49" r="4" fill="#138a8a"/>
+  <title id="title">PacketHub sinal de captura</title>
+  <desc id="desc">Onda de tráfego indicando captura de pacotes.</desc>
+  <rect width="80" height="80" rx="18" fill="#f06449"/>
+  <path d="M12 44h12l5-13 7 26 8-34 7 21h17" fill="none" stroke="#fff8ed" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="44" cy="23" r="5" fill="#f3b44b" stroke="#193235" stroke-width="3"/>
 </svg>
