@@ -1,4 +1,99 @@
 @server = http://localhost:3000
 
-GET {{server}}/packets?protocol=DNS
+### Listar todos os pacotes
+
+GET {{server}}/packets
+
+### Filtrar pacotes por protocolo
+
+GET {{server}}/packets?protocol=UDP
+
+### Buscar um pacote pelo ID existente
+
+GET {{server}}/packets/18492
+
+### Listar todos os nós
+
+GET {{server}}/nodes
+
+### Buscar um nó pelo ID
+
+GET {{server}}/nodes/1
+
+### Consultar os indicadores
+
+GET {{server}}/stats
+
+### Consultar o estado da captura
+
+GET {{server}}/capture
+
+### Consultar as camadas de rede
+
+GET {{server}}/layers
+
+### Criar um pacote
+
+# @name criarPacote
+POST {{server}}/packets
+Content-Type: application/json
+
+{
+	"time": "23:59:59.999",
+	"src": "127.0.0.1:50000",
+	"dst": "127.0.0.1:443",
+	"protocol": "TCP",
+	"info": "Pacote criado pelo requests.http",
+	"size": "64 B"
+}
+
+### Buscar o pacote criado
+
+GET {{server}}/packets/{{criarPacote.response.body.$.id}}
+
+### Editar o pacote criado
+
+PATCH {{server}}/packets/{{criarPacote.response.body.$.id}}
+Content-Type: application/json
+
+{
+	"info": "Pacote editado pelo requests.http"
+}
+
+### Excluir o pacote criado
+
+DELETE {{server}}/packets/{{criarPacote.response.body.$.id}}
+
+### Criar um nó
+
+# @name criarNo
+POST {{server}}/nodes
+Content-Type: application/json
+
+{
+	"host": "node-teste",
+	"ip": "127.0.0.2",
+	"service": "HTTP",
+	"latency": "1 ms",
+	"load": "0%",
+	"status": "Operacional"
+}
+
+### Buscar o nó criado
+
+GET {{server}}/nodes/{{criarNo.response.body.$.id}}
+
+### Editar parte do nó criado
+
+PATCH {{server}}/nodes/{{criarNo.response.body.$.id}}
+Content-Type: application/json
+
+{
+	"service": "HTTP / teste"
+}
+
+### Excluir o nó criado
+
+DELETE {{server}}/nodes/{{criarNo.response.body.$.id}}
+
 
