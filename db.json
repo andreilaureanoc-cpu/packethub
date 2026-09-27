@@ -1,0 +1,160 @@
+{
+  "packets": [
+    {
+      "id": "18492",
+      "time": "14:32:08.421",
+      "src": "10.0.12.04:443",
+      "dst": "10.0.8.21:52144",
+      "protocol": "TCP",
+      "info": "[ACK] Seq=1 Win=64240",
+      "size": "66 B"
+    },
+    {
+      "id": "18491",
+      "time": "14:32:08.417",
+      "src": "10.0.8.21:52144",
+      "dst": "10.0.12.04:443",
+      "protocol": "TCP",
+      "info": "[PSH, ACK] Len=1280",
+      "size": "1,346 B"
+    },
+    {
+      "id": "18490",
+      "time": "14:32:08.402",
+      "src": "10.0.4.12:53",
+      "dst": "10.0.12.04:53022",
+      "protocol": "DNS",
+      "info": "Standard query A api.prod",
+      "size": "92 B"
+    },
+    {
+      "id": "18489",
+      "time": "14:32:08.398",
+      "src": "172.16.0.01:67",
+      "dst": "255.255.255.255:68",
+      "protocol": "UDP",
+      "info": "DHCP Request",
+      "size": "342 B"
+    },
+    {
+      "id": "18488",
+      "time": "14:32:08.377",
+      "src": "10.0.22.16:80",
+      "dst": "10.0.12.04:49201",
+      "protocol": "HTTP",
+      "info": "GET /health HTTP/1.1",
+      "size": "489 B"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "1",
+      "host": "edge-sp01",
+      "ip": "10.0.12.04",
+      "service": "HTTP / DNS",
+      "latency": "12 ms",
+      "load": "38%",
+      "status": "Operacional"
+    },
+    {
+      "id": "2",
+      "host": "core-db02",
+      "ip": "10.0.8.21",
+      "service": "PostgreSQL / SSH",
+      "latency": "8 ms",
+      "load": "61%",
+      "status": "Operacional"
+    },
+    {
+      "id": "3",
+      "host": "gateway-rj01",
+      "ip": "172.16.0.01",
+      "service": "DHCP / Firewall",
+      "latency": "24 ms",
+      "load": "78%",
+      "status": "Atenção"
+    },
+    {
+      "id": "4",
+      "host": "api-prod03",
+      "ip": "10.0.22.16",
+      "service": "HTTPS / SSH",
+      "latency": "16 ms",
+      "load": "44%",
+      "status": "Operacional"
+    },
+    {
+      "id": "5",
+      "host": "cache-sp04",
+      "ip": "10.0.14.09",
+      "service": "Redis / DNS",
+      "latency": "—",
+      "load": "0%",
+      "status": "Indisponível"
+    }
+  ],
+  "stats": {
+    "captured": 18492,
+    "rate": 246,
+    "dataMB": 842,
+    "droppedPct": "0.02%",
+    "protocols": [
+      {
+        "name": "TCP",
+        "total": 11542,
+        "percentage": "62.4%",
+        "label": "Conexões observadas"
+      },
+      {
+        "name": "UDP",
+        "total": 5194,
+        "percentage": "28.1%",
+        "label": "Datagramas observados"
+      },
+      {
+        "name": "DNS",
+        "total": 1441,
+        "percentage": "7.8%",
+        "label": "Consultas resolvidas"
+      },
+      {
+        "name": "HTTP",
+        "total": 315,
+        "percentage": "1.7%",
+        "label": "Requisições analisadas"
+      }
+    ]
+  },
+  "capture": {
+    "interface": "any",
+    "command": "tcpdump -i any",
+    "duration": "00:18:42",
+    "filter": "tcp or udp",
+    "active": true
+  },
+  "layers": [
+    {
+      "id": "application",
+      "protocols": [
+        "HTTP",
+        "DNS",
+        "SSH"
+      ]
+    },
+    {
+      "id": "transport",
+      "protocols": [
+        "TCP",
+        "UDP"
+      ]
+    },
+    {
+      "id": "network",
+      "protocols": [
+        "IP",
+        "ARP",
+        "Ethernet"
+      ]
+    }
+  ]
+}
