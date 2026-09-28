@@ -7,7 +7,7 @@
       name="description"
       content="Dashboard de captura e inspeção de pacotes do PacketHub."
     />
-    <title>PacketHub | Inspetor de pacotes</title>
+    <title>PacketHub | Visão geral</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -35,7 +35,7 @@
         class="flex flex-col bg-[#193235] px-5 py-6 text-white lg:min-h-screen lg:px-6"
       >
         <a
-          href="#"
+            href="index.html"
           class="mb-10 flex items-center gap-3"
           aria-label="PacketHub início"
           ><img src="images/logo-camadas.svg" alt="" class="h-11 w-11" /><span
@@ -47,29 +47,46 @@
           <p
             class="mb-3 px-3 text-[10px] font-bold uppercase tracking-[.2em] text-[#83a9a2]"
           >
+            Monitoramento
+          </p>
+          <a
+            href="index.html"
+            aria-current="page"
+            class="flex items-center gap-3 rounded-lg bg-[#2a4c4d] px-3 py-3 text-sm font-semibold"
+            ><span class="text-[#7ed8bb]">◫</span> Visão geral</a
+          ><a
+            href="nodes.html"
+            class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm text-[#b4cbc5] hover:bg-[#2a4c4d]"
+            ><span>⌘</span> Nós monitorados</a
+          >
+          <p
+            class="mb-3 mt-6 px-3 text-[10px] font-bold uppercase tracking-[.2em] text-[#83a9a2]"
+          >
             Análise
           </p>
           <a
-            href="#capture"
-            class="flex items-center gap-3 rounded-lg bg-[#2a4c4d] px-3 py-3 text-sm font-semibold"
-            ><span class="text-[#7ed8bb]">⌁</span> Inspetor de pacotes</a
+            href="packets.html"
+            class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm text-[#b4cbc5] hover:bg-[#2a4c4d]"
+            ><span>⌁</span> Pacotes</a
           ><a
-            href="#protocols"
+            href="protocols.html"
             class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm text-[#b4cbc5] hover:bg-[#2a4c4d]"
             ><span>◈</span> Protocolos</a
-          ><a
-            href="#nodes"
-            class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm text-[#b4cbc5] hover:bg-[#2a4c4d]"
-            ><span>⌘</span> Nós monitorados</a
-          ><a
-            href="#alerts"
+          >
+          <p
+            class="mb-3 mt-6 px-3 text-[10px] font-bold uppercase tracking-[.2em] text-[#83a9a2]"
+          >
+            Operação
+          </p>
+          <a
+            href="alerts.html"
             class="flex items-center justify-between rounded-lg px-3 py-3 text-sm text-[#b4cbc5] hover:bg-[#2a4c4d]"
             ><span>! &nbsp; Alertas</span
-            ><b class="rounded-full bg-[#f06449] px-2 py-0.5 text-[10px]"
-              >3</b
+            ><b data-alert-count class="rounded-full bg-[#f06449] px-2 py-0.5 text-[10px]"
+              >0</b
             ></a
           ><a
-            href="#reports"
+            href="reports.html"
             class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm text-[#b4cbc5] hover:bg-[#2a4c4d]"
             ><span>▤</span> Relatórios</a
           >
@@ -79,18 +96,11 @@
         >
           <div class="mb-3 flex justify-between text-xs font-semibold">
             <span>Agente tcpdump</span
-            ><i class="h-2 w-2 rounded-full bg-[#7ed8bb]"></i>
+            ><i id="capture-agent-indicator" class="h-2 w-2 rounded-full bg-[#7ed8bb]"></i>
           </div>
-          <p class="text-[11px] text-[#9ebbb4]">
-            Captura ativa em 4 interfaces.
-          </p>
-          <p class="mt-3 text-[10px] text-[#9ebbb4]">
-            eth0, eth1, any · AO VIVO
-          </p>
+          <p id="capture-agent-interface" class="text-[11px] text-[#9ebbb4]">Interface any</p>
+          <p id="capture-agent-state" class="mt-3 text-[10px] text-[#9ebbb4]">AO VIVO</p>
         </div>
-        <a href="#settings" class="mt-8 px-3 py-2 text-sm text-[#b4cbc5]"
-          >⚙ &nbsp; Configurações</a
-        >
       </aside>
       <main class="min-w-0 px-5 py-6 sm:px-8 lg:px-12 lg:py-9">
         <header
@@ -100,22 +110,18 @@
             <p
               class="mb-2 text-xs font-bold uppercase tracking-[.18em] text-teal"
             >
-              PacketHub / análise ao vivo
+              PacketHub / monitoramento
             </p>
             <h1 class="font-display text-3xl font-bold sm:text-4xl">
-              Inspetor de pacotes
+              Visão geral
             </h1>
           </div>
-          <div class="flex items-center gap-4">
-            <label class="relative flex-1 sm:w-64"
-              ><span class="sr-only">Buscar pacotes</span
-              ><span class="absolute left-3 top-2.5 text-[#78918b]">⌕</span
-              ><input
-                type="search"
-                id="packet-search"
-                placeholder="Buscar IP, porta ou protocolo"
-                class="w-full rounded-lg border border-[#d3e1db] bg-white py-2.5 pl-9 text-xs outline-none focus:border-teal"
-            /></label>
+          <div class="flex items-center justify-between gap-4">
+            <a
+              href="#pages"
+              class="rounded-lg bg-[#137f78] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#106b66]"
+              >Explorar páginas</a
+            >
             <div class="border-l border-[#dbe7e1] pl-4">
               <p class="hidden text-right text-sm font-bold sm:block">
                 Gabriel Palmeira
@@ -168,17 +174,8 @@
               >
             </div>
           </div>
-          <div class="mb-6 flex flex-col gap-3 md:flex-row">
-            <label
-              class="flex flex-1 items-center rounded-lg bg-[#193235] px-4 py-3"
-              ><span class="mr-3 font-mono text-xs text-[#7ed8bb]"
-                >filtro BPF</span
-              ><input
-                id="capture-filter"
-                value="tcp or udp"
-                aria-label="Filtro BPF"
-                class="min-w-0 flex-1 bg-transparent font-mono text-sm text-white outline-none" /></label
-            ><button
+          <div class="mb-6 flex justify-end">
+            <button
               id="capture-toggle"
               type="button"
               class="rounded-lg bg-signal px-5 py-3 text-xs font-bold text-white"
@@ -228,9 +225,10 @@
           id="protocols"
           class="mb-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
         >
-          <article
+          <a
+            href="protocols.html"
             data-protocol="TCP"
-            class="rounded-xl border border-[#d3e1db] bg-white p-4"
+            class="block rounded-xl border border-[#d3e1db] bg-white p-4 hover:border-teal"
           >
             <div class="mb-4 flex justify-between">
               <b class="rounded bg-[#e7f6ee] px-2 py-1 text-xs text-teal">TCP</b
@@ -238,10 +236,11 @@
             </div>
             <strong class="font-display text-2xl">11,542</strong>
             <p class="mt-1 text-xs text-[#78918b]">Conexões observadas</p>
-          </article>
-          <article
+          </a>
+          <a
+            href="protocols.html"
             data-protocol="UDP"
-            class="rounded-xl border border-[#d3e1db] bg-white p-4"
+            class="block rounded-xl border border-[#d3e1db] bg-white p-4 hover:border-teal"
           >
             <div class="mb-4 flex justify-between">
               <b class="rounded bg-[#fff3da] px-2 py-1 text-xs text-[#a26900]"
@@ -250,10 +249,11 @@
             </div>
             <strong class="font-display text-2xl">5,194</strong>
             <p class="mt-1 text-xs text-[#78918b]">Datagramas observados</p>
-          </article>
-          <article
+          </a>
+          <a
+            href="protocols.html"
             data-protocol="DNS"
-            class="rounded-xl border border-[#d3e1db] bg-white p-4"
+            class="block rounded-xl border border-[#d3e1db] bg-white p-4 hover:border-teal"
           >
             <div class="mb-4 flex justify-between">
               <b class="rounded bg-[#eef3ff] px-2 py-1 text-xs text-[#526fa6]"
@@ -262,10 +262,11 @@
             </div>
             <strong class="font-display text-2xl">1,441</strong>
             <p class="mt-1 text-xs text-[#78918b]">Consultas resolvidas</p>
-          </article>
-          <article
+          </a>
+          <a
+            href="protocols.html"
             data-protocol="HTTP"
-            class="rounded-xl border border-[#d3e1db] bg-white p-4"
+            class="block rounded-xl border border-[#d3e1db] bg-white p-4 hover:border-teal"
           >
             <div class="mb-4 flex justify-between">
               <b class="rounded bg-[#fff0ed] px-2 py-1 text-xs text-signal"
@@ -274,143 +275,29 @@
             </div>
             <strong class="font-display text-2xl">315</strong>
             <p class="mt-1 text-xs text-[#78918b]">Requisições analisadas</p>
-          </article>
+          </a>
         </section>
-        <section aria-labelledby="packets-title" class="mb-7">
-          <div
-            class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"
-          >
-            <div>
-              <p
-                class="mb-1 text-xs font-bold uppercase tracking-[.18em] text-teal"
-              >
-                Stream de dados
-              </p>
-              <h2 id="packets-title" class="font-display text-xl font-bold">
-                Pacotes recentes
-              </h2>
-            </div>
-            <div class="flex flex-wrap gap-2">
-              <select
-                id="protocol-filter"
-                aria-label="Filtrar por protocolo"
-                class="rounded border border-[#d3e1db] bg-white px-3 py-2 text-xs"
-              >
-                <option value="">Todos os protocolos</option>
-                <option value="TCP">TCP</option>
-                <option value="UDP">UDP</option>
-                <option value="DNS">DNS</option>
-                <option value="HTTP">HTTP</option>
-              </select>
-              <select
-                id="packet-limit"
-                aria-label="Quantidade de pacotes"
-                class="rounded border border-[#d3e1db] bg-white px-3 py-2 text-xs"
-              >
-                <option value="5">Últimos 5</option>
-                <option value="50">Últimos 50</option>
-                <option value="all">Todos</option>
-              </select>
-              <button
-                id="add-packet"
-                type="button"
-                class="rounded-lg bg-[#137f78] px-3 py-2 text-xs font-bold text-white"
-              >
-                + Pacote
-              </button>
-            </div>
+        <section id="pages" aria-labelledby="pages-title" class="mb-7">
+          <div class="mb-4">
+            <p class="mb-1 text-xs font-bold uppercase tracking-[.18em] text-teal">Acesso rápido</p>
+            <h2 id="pages-title" class="font-display text-xl font-bold">Explorar o PacketHub</h2>
           </div>
-          <div
-            class="overflow-x-auto rounded-xl border border-[#d3e1db] bg-white"
-          >
-            <table class="w-full min-w-[900px] text-left text-xs">
-              <thead
-                class="border-b border-[#e1ebe6] bg-[#f8fbf9] text-[10px] uppercase tracking-[.14em] text-[#78918b]"
-              >
-                <tr>
-                  <th class="px-5 py-4">No.</th>
-                  <th class="px-5 py-4">Tempo</th>
-                  <th class="px-5 py-4">Origem</th>
-                  <th class="px-5 py-4">Destino</th>
-                  <th class="px-5 py-4">Protocolo</th>
-                  <th class="px-5 py-4">Informação</th>
-                  <th class="px-5 py-4">Tamanho</th>
-                  <th class="px-5 py-4">Ações</th>
-                </tr>
-              </thead>
-              <tbody
-                id="packets-body"
-                class="divide-y divide-[#e8efeb] font-mono"
-              ></tbody>
-            </table>
-          </div>
-        </section>
-        <section id="nodes" class="grid gap-4 lg:grid-cols-[1.2fr_.8fr]">
-          <div class="rounded-xl border border-[#d3e1db] bg-white p-5">
-            <div class="mb-4 flex justify-between">
-              <h2 class="font-display text-lg font-bold">
-                Servidores monitorados
-              </h2>
-              <div class="flex items-center gap-3">
-                <span id="node-count" class="text-xs text-[#78918b]"
-                  >5 hosts ativos</span
-                >
-                <button
-                  id="add-node"
-                  type="button"
-                  class="rounded-lg bg-[#137f78] px-3 py-2 text-xs font-bold text-white"
-                >
-                  + Nó
-                </button>
-              </div>
-            </div>
-            <div class="overflow-x-auto">
-              <table class="w-full min-w-[700px] text-left text-xs">
-                <thead
-                  class="border-b border-[#e1ebe6] text-[10px] uppercase text-[#78918b]"
-                >
-                  <tr>
-                    <th class="px-3 py-3">Host</th>
-                    <th class="px-3 py-3">IP</th>
-                    <th class="px-3 py-3">Serviço</th>
-                    <th class="px-3 py-3">Latência</th>
-                    <th class="px-3 py-3">Carga</th>
-                    <th class="px-3 py-3">Status</th>
-                    <th class="px-3 py-3">Ações</th>
-                  </tr>
-                </thead>
-                <tbody
-                  id="nodes-body"
-                  class="divide-y divide-[#e8efeb]"
-                ></tbody>
-              </table>
-            </div>
-          </div>
-          <div class="rounded-xl bg-[#193235] p-5 text-white">
-            <div class="mb-4 flex justify-between">
-              <h2 class="font-display text-lg font-bold">Camadas analisadas</h2>
-              <span class="text-xs text-[#7ed8bb]">OSI / TCP-IP</span>
-            </div>
-            <div class="space-y-3 text-xs">
-              <p
-                id="layer-application"
-                class="flex justify-between border-b border-[#3a5b58] pb-2"
-              >
-                <span class="text-[#b3ccc4]">Aplicação</span
-                ><b class="font-mono text-[#7ed8bb]">HTTP · DNS · SSH</b>
-              </p>
-              <p
-                id="layer-transport"
-                class="flex justify-between border-b border-[#3a5b58] pb-2"
-              >
-                <span class="text-[#b3ccc4]">Transporte</span
-                ><b class="font-mono text-[#f3b44b]">TCP · UDP</b>
-              </p>
-              <p id="layer-network" class="flex justify-between">
-                <span class="text-[#b3ccc4]">Rede / Enlace</span
-                ><b class="font-mono text-signal">IP · ARP · Ethernet</b>
-              </p>
-            </div>
+          <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <a href="packets.html" class="flex items-center justify-between gap-4 rounded-lg border border-[#d3e1db] bg-white p-4 hover:border-teal">
+              <span><b class="block text-sm">Pacotes</b><span class="mt-1 block text-xs text-[#78918b]">Buscar, filtrar e editar registros de tráfego.</span></span><span aria-hidden="true" class="text-lg text-teal">→</span>
+            </a>
+            <a href="nodes.html" class="flex items-center justify-between gap-4 rounded-lg border border-[#d3e1db] bg-white p-4 hover:border-teal">
+              <span><b class="block text-sm">Nós monitorados</b><span id="node-count" class="mt-1 block text-xs text-[#78918b]">Carregando hosts</span></span><span aria-hidden="true" class="text-lg text-teal">→</span>
+            </a>
+            <a href="protocols.html" class="flex items-center justify-between gap-4 rounded-lg border border-[#d3e1db] bg-white p-4 hover:border-teal">
+              <span><b class="block text-sm">Protocolos</b><span class="mt-1 block text-xs text-[#78918b]">Compare a distribuição e as camadas da rede.</span></span><span aria-hidden="true" class="text-lg text-teal">→</span>
+            </a>
+            <a href="alerts.html" class="flex items-center justify-between gap-4 rounded-lg border border-[#d3e1db] bg-white p-4 hover:border-teal">
+              <span><b class="block text-sm">Alertas</b><span id="alert-count" class="mt-1 block text-xs text-[#78918b]">Carregando alertas</span></span><span aria-hidden="true" class="text-lg text-teal">→</span>
+            </a>
+            <a href="reports.html" class="flex items-center justify-between gap-4 rounded-lg border border-[#d3e1db] bg-white p-4 hover:border-teal">
+              <span><b class="block text-sm">Relatórios</b><span class="mt-1 block text-xs text-[#78918b]">Consulte e exporte o resumo da captura atual.</span></span><span aria-hidden="true" class="text-lg text-teal">→</span>
+            </a>
           </div>
         </section>
         <footer

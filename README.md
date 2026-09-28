@@ -26,11 +26,13 @@
 - **Workflow / Kanban:** [GitHub Projects](https://github.com/orgs/usuario/projects/1)
 - **Documentação do Projeto:** [Ver pasta de documentação](docs/)
 
-## Páginas / Telas da Aplicação (GitHub Pages)
-- 🏠 **Índice / Home:** (https://andreilaureanoc-cpu.github.io/packethub/)
-- 📊 **Dashboard:** (https://andreilaureanoc-cpu.github.io/packethub/dashboard.html)
-- 🔑 **Autenticação:** (https://andreilaureanoc-cpu.github.io/packethub/login.html)
-- 📋 **Relatórios:** (https://andreilaureanoc-cpu.io/packethub/reports.html)
+## Páginas da Aplicação
+- [Visão geral](index.html)
+- [Nós monitorados](nodes.html)
+- [Pacotes](packets.html)
+- [Protocolos](protocols.html)
+- [Alertas](alerts.html)
+- [Relatórios](reports.html)
 
 ## Funcionalidades Planejadas (Features)
 - [x] Visualização de métricas (CPU, Memória, Latência) e status de servidores no Dashboard com dados fictícios

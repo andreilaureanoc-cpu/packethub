@@ -6,6 +6,7 @@ const formatarNumero = new Intl.NumberFormat("en-US");
 let pacotes = [];
 let nos = [];
 let captura = {};
+let resumoCaptura = {};
 let recursoEditado = "";
 let idEditado = null;
 
@@ -109,13 +110,18 @@ function adicionarBotoesDeAcao(celula, recurso, registro) {
 
 function mostrarPacotes() {
   const tabela = document.querySelector("#packets-body");
-  const busca = document.querySelector("#packet-search").value.toLowerCase();
-  const limite = document.querySelector("#packet-limit").value;
+  const busca =
+    document.querySelector("#packet-search")?.value.toLowerCase() || "";
+  const limite = document.querySelector("#packet-limit")?.value || "all";
 
   let pacotesVisiveis = pacotes.filter((pacote) => {
     const texto = `${pacote.id} ${pacote.time} ${pacote.src} ${pacote.dst} ${pacote.protocol} ${textoDaInformacao(pacote)}`;
     return texto.toLowerCase().includes(busca);
   });
+  const contador = document.querySelector("#packet-count");
+  if (contador) {
+    contador.textContent = `${pacotesVisiveis.length} ${pacotesVisiveis.length === 1 ? "pacote" : "pacotes"}`;
+  }
   pacotesVisiveis.sort((primeiro, segundo) =>
     segundo.time.localeCompare(primeiro.time),
   );
@@ -178,7 +184,11 @@ function mostrarPacotes() {
 function mostrarNos() {
   const tabela = document.querySelector("#nodes-body");
   const contador = document.querySelector("#node-count");
-  contador.textContent = `${nos.length} ${nos.length === 1 ? "host ativo" : "hosts ativos"}`;
+  if (contador) {
+    contador.textContent = `${nos.length} ${nos.length === 1 ? "host cadastrado" : "hosts cadastrados"}`;
+  }
+
+  if (!tabela) return;
 
   if (nos.length === 0) {
     mostrarLinhaVazia(
@@ -212,8 +222,58 @@ function mostrarNos() {
   }
 }
 
+function mostrarAlertas() {
+  const alertas = nos.filter((no) => no.status !== "Operacional");
+  document.querySelectorAll("[data-alert-count]").forEach((contador) => {
+    contador.textContent = alertas.length;
+    contador.classList.toggle("hidden", alertas.length === 0);
+  });
+
+  const resumo = document.querySelector("#alert-count");
+  if (resumo) {
+    resumo.textContent = `${alertas.length} ${alertas.length === 1 ? "host requer" : "hosts requerem"} atenção`;
+  }
+
+  const lista = document.querySelector("#alerts-body");
+  if (!lista) return;
+  if (alertas.length === 0) {
+    lista.replaceChildren(
+      elemento("p", "py-12 text-center text-sm text-[#66817a]", "Nenhum host requer atenção no momento."),
+    );
+    return;
+  }
+
+  lista.replaceChildren();
+  for (const no of alertas) {
+    const indisponivel = no.status === "Indisponível";
+    const item = elemento(
+      "article",
+      "grid gap-3 border-b border-[#e5eee9] py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center",
+    );
+    const detalhes = elemento("div");
+    const titulo = elemento(
+      "h3",
+      "font-semibold",
+      `${no.host} · ${no.status}`,
+    );
+    const descricao = elemento(
+      "p",
+      "mt-1 text-sm text-[#66817a]",
+      `${no.ip} · ${no.service} · Carga ${no.load} · Latência ${no.latency}`,
+    );
+    const gravidade = elemento(
+      "span",
+      `inline-flex rounded px-2.5 py-1 text-xs font-bold ${indisponivel ? "bg-[#fff0ed] text-signal" : "bg-[#fff3da] text-[#a26900]"}`,
+      indisponivel ? "Indisponível" : "Atenção",
+    );
+    detalhes.append(titulo, descricao);
+    item.append(detalhes, gravidade);
+    lista.appendChild(item);
+  }
+}
+
 async function carregarPacotes() {
-  const protocolo = document.querySelector("#protocol-filter").value;
+  const protocolo = document.querySelector("#protocol-filter")?.value || "";
   let url = `${api}/packets`;
   if (protocolo) url += `?protocol=${encodeURIComponent(protocolo)}`;
 
@@ -226,23 +286,33 @@ async function carregarNos() {
   const resposta = await fetch(`${api}/nodes`);
   nos = await lerResposta(resposta);
   mostrarNos();
+  mostrarAlertas();
 }
 
 async function carregarResumo() {
   const resposta = await fetch(`${api}/stats`);
-  const resumo = await lerResposta(resposta);
-  document.querySelector("#stat-captured").textContent = formatarNumero.format(
-    resumo.captured,
-  );
-  document.querySelector("#stat-rate").textContent = formatarNumero.format(
-    resumo.rate,
-  );
-  document.querySelector("#stat-data").textContent = formatarNumero.format(
-    resumo.dataMB,
-  );
-  document.querySelector("#stat-dropped").textContent = resumo.droppedPct;
+  resumoCaptura = await lerResposta(resposta);
+  const capturados = document.querySelector("#stat-captured");
+  if (capturados) capturados.textContent = formatarNumero.format(resumoCaptura.captured);
+  const taxa = document.querySelector("#stat-rate");
+  if (taxa) taxa.textContent = formatarNumero.format(resumoCaptura.rate);
+  const dados = document.querySelector("#stat-data");
+  if (dados) dados.textContent = formatarNumero.format(resumoCaptura.dataMB);
+  const descartados = document.querySelector("#stat-dropped");
+  if (descartados) descartados.textContent = resumoCaptura.droppedPct;
 
-  for (const protocolo of resumo.protocols) {
+  const camposRelatorio = {
+    captured: formatarNumero.format(resumoCaptura.captured),
+    rate: `${formatarNumero.format(resumoCaptura.rate)} pkt/s`,
+    data: `${formatarNumero.format(resumoCaptura.dataMB)} MB`,
+    dropped: resumoCaptura.droppedPct,
+  };
+  for (const [campo, valor] of Object.entries(camposRelatorio)) {
+    const destino = document.querySelector(`[data-report="${campo}"]`);
+    if (destino) destino.textContent = valor;
+  }
+
+  for (const protocolo of resumoCaptura.protocols) {
     const cartao = document.querySelector(
       `[data-protocol="${protocolo.name}"]`,
     );
@@ -252,6 +322,8 @@ async function carregarResumo() {
         protocolo.total,
       );
       cartao.querySelector("p").textContent = protocolo.label;
+      const barra = cartao.querySelector("[data-protocol-bar]");
+      if (barra) barra.style.width = protocolo.percentage;
     }
   }
 }
@@ -259,22 +331,47 @@ async function carregarResumo() {
 async function carregarCaptura() {
   const resposta = await fetch(`${api}/capture`);
   captura = await lerResposta(resposta);
-  document.querySelector("#capture-interface").textContent = captura.interface;
-  document.querySelector("#capture-command").textContent = captura.command;
-  document.querySelector("#capture-duration").textContent = captura.duration;
-  document.querySelector("#capture-filter").value = captura.filter;
+  const interfaceCaptura = document.querySelector("#capture-interface");
+  if (interfaceCaptura) interfaceCaptura.textContent = captura.interface;
+  const comandoCaptura = document.querySelector("#capture-command");
+  if (comandoCaptura) comandoCaptura.textContent = captura.command;
+  const duracaoCaptura = document.querySelector("#capture-duration");
+  if (duracaoCaptura) duracaoCaptura.textContent = captura.duration;
+  const filtroCaptura = document.querySelector("#capture-filter");
+  if (filtroCaptura) filtroCaptura.value = captura.filter;
+  const camposRelatorio = {
+    interface: captura.interface || "—",
+    status: captura.active ? "Em andamento" : "Pausada",
+    duration: captura.duration || "—",
+  };
+  for (const [campo, valor] of Object.entries(camposRelatorio)) {
+    const destino = document.querySelector(`#report-${campo}`);
+    if (destino) destino.textContent = valor;
+  }
 
   const status = document.querySelector("#capture-status");
-  status.lastChild.textContent = captura.active
-    ? " Captura em andamento"
-    : " Captura pausada";
-  status.classList.toggle("text-signal", captura.active);
-  status.classList.toggle("text-[#78918b]", !captura.active);
-  status.querySelector("i").classList.toggle("bg-signal", captura.active);
-  status.querySelector("i").classList.toggle("bg-[#78918b]", !captura.active);
+  if (status) {
+    status.lastChild.textContent = captura.active
+      ? " Captura em andamento"
+      : " Captura pausada";
+    status.classList.toggle("text-signal", captura.active);
+    status.classList.toggle("text-[#78918b]", !captura.active);
+    status.querySelector("i").classList.toggle("bg-signal", captura.active);
+    status.querySelector("i").classList.toggle("bg-[#78918b]", !captura.active);
+  }
 
   const botao = document.querySelector("#capture-toggle");
-  botao.textContent = captura.active ? "Parar captura" : "Retomar captura";
+  if (botao) botao.textContent = captura.active ? "Parar captura" : "Retomar captura";
+
+  const interfaceAgente = document.querySelector("#capture-agent-interface");
+  if (interfaceAgente) interfaceAgente.textContent = `Interface ${captura.interface}`;
+  const estadoAgente = document.querySelector("#capture-agent-state");
+  if (estadoAgente) estadoAgente.textContent = captura.active ? "AO VIVO" : "PAUSADA";
+  const indicadorAgente = document.querySelector("#capture-agent-indicator");
+  if (indicadorAgente) {
+    indicadorAgente.classList.toggle("bg-[#7ed8bb]", captura.active);
+    indicadorAgente.classList.toggle("bg-[#f06449]", !captura.active);
+  }
 }
 
 async function carregarCamadas() {
@@ -282,22 +379,69 @@ async function carregarCamadas() {
   const camadas = await lerResposta(resposta);
   for (const camada of camadas) {
     const linha = document.querySelector(`#layer-${camada.id}`);
-    if (linha)
-      linha.querySelector("b").textContent = camada.protocols.join(" · ");
+    if (linha) {
+      const protocolos = linha.querySelector("b") || linha;
+      protocolos.textContent = camada.protocols.join(" · ");
+    }
   }
 }
 
 async function carregarPagina() {
   limparErro();
   try {
-    await carregarPacotes();
-    await carregarNos();
-    await carregarResumo();
-    await carregarCaptura();
-    await carregarCamadas();
+    if (document.querySelector("#packets-body")) await carregarPacotes();
+    if (
+      document.querySelector("#nodes-body") ||
+      document.querySelector("#alerts-body") ||
+      document.querySelector("[data-alert-count]")
+    ) {
+      await carregarNos();
+    }
+    if (
+      document.querySelector("#stat-captured") ||
+      document.querySelector("[data-protocol]") ||
+      document.querySelector("[data-report]")
+    ) {
+      await carregarResumo();
+    }
+    if (
+      document.querySelector("#capture-interface") ||
+      document.querySelector("#capture-agent-interface")
+    ) {
+      await carregarCaptura();
+    }
+    if (document.querySelector("#layer-application")) await carregarCamadas();
   } catch (erro) {
     mostrarErro(erro);
   }
+}
+
+function exportarRelatorio() {
+  const linhas = [
+    ["Categoria", "Indicador", "Valor"],
+    ["Relatório", "Gerado em", new Date().toISOString()],
+    ["Captura atual", "Interface", captura.interface || "—"],
+    ["Captura atual", "Estado", captura.active ? "Ativa" : "Pausada"],
+    ["Captura atual", "Duração", captura.duration || "—"],
+    ["Métricas", "Pacotes capturados", resumoCaptura.captured ?? "—"],
+    ["Métricas", "Taxa atual (pkt/s)", resumoCaptura.rate ?? "—"],
+    ["Métricas", "Dados analisados (MB)", resumoCaptura.dataMB ?? "—"],
+    ["Métricas", "Pacotes descartados", resumoCaptura.droppedPct ?? "—"],
+    ...((resumoCaptura.protocols || []).map((protocolo) => [
+      "Protocolo",
+      protocolo.name,
+      `${protocolo.total} (${protocolo.percentage})`,
+    ])),
+  ];
+  const csv = linhas
+    .map((linha) => linha.map((valor) => `"${String(valor).replaceAll('"', '""')}"`).join(","))
+    .join("\n");
+  const arquivo = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(arquivo);
+  link.download = "packethub-relatorio-atual.csv";
+  link.click();
+  URL.revokeObjectURL(link.href);
 }
 
 const campos = {
@@ -442,41 +586,44 @@ async function atualizarCaptura(alteracoes) {
 
 document
   .querySelector("#add-packet")
-  .addEventListener("click", () => abrirFormulario("packets"));
+  ?.addEventListener("click", () => abrirFormulario("packets"));
 document
   .querySelector("#add-node")
-  .addEventListener("click", () => abrirFormulario("nodes"));
+  ?.addEventListener("click", () => abrirFormulario("nodes"));
 document
   .querySelector("#packet-search")
-  .addEventListener("input", mostrarPacotes);
+  ?.addEventListener("input", mostrarPacotes);
 document
   .querySelector("#packet-limit")
-  .addEventListener("change", mostrarPacotes);
-document
-  .querySelector("#protocol-filter")
-  .addEventListener("change", () => carregarPacotes().catch(mostrarErro));
-document
-  .querySelector("#dialog-close")
-  .addEventListener("click", () =>
-    document.querySelector("#record-dialog").close(),
-  );
-document
-  .querySelector("#dialog-cancel")
-  .addEventListener("click", () =>
-    document.querySelector("#record-dialog").close(),
-  );
+  ?.addEventListener("change", mostrarPacotes);
+document.querySelector("#protocol-filter")?.addEventListener("change", () =>
+  carregarPacotes().catch(mostrarErro),
+);
+document.querySelector("#dialog-close")?.addEventListener("click", () =>
+  document.querySelector("#record-dialog").close(),
+);
+document.querySelector("#dialog-cancel")?.addEventListener("click", () =>
+  document.querySelector("#record-dialog").close(),
+);
 document
   .querySelector("#record-form")
-  .addEventListener("submit", salvarRegistro);
+  ?.addEventListener("submit", salvarRegistro);
+document.querySelector("#capture-toggle")?.addEventListener("click", () =>
+  atualizarCaptura({ active: !captura.active }),
+);
+document.querySelector("#capture-filter")?.addEventListener("change", (evento) =>
+  atualizarCaptura({ filter: evento.currentTarget.value }),
+);
 document
-  .querySelector("#capture-toggle")
-  .addEventListener("click", () =>
-    atualizarCaptura({ active: !captura.active }),
-  );
-document
-  .querySelector("#capture-filter")
-  .addEventListener("change", (evento) =>
-    atualizarCaptura({ filter: evento.currentTarget.value }),
-  );
+  .querySelector("#report-export")
+  ?.addEventListener("click", exportarRelatorio);
+
+const filtroInicial = document.querySelector("#protocol-filter");
+if (filtroInicial) {
+  const protocoloInicial = new URLSearchParams(window.location.search).get("protocol");
+  if ([...filtroInicial.options].some((opcao) => opcao.value === protocoloInicial)) {
+    filtroInicial.value = protocoloInicial;
+  }
+}
 
 carregarPagina();
