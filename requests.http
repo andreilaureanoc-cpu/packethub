@@ -2,23 +2,23 @@
 
 ### Listar todos os pacotes
 
-GET {{server}}/packets
+GET {{server}}/packetRecords
 
 ### Filtrar pacotes por protocolo
 
-GET {{server}}/packets?protocol=UDP
+GET {{server}}/packetRecords?protocol=UDP
 
 ### Buscar um pacote pelo ID existente
 
-GET {{server}}/packets/18492
+GET {{server}}/packetRecords/18492
 
 ### Listar todos os nós
 
-GET {{server}}/nodes
+GET {{server}}/nodeRecords
 
 ### Buscar um nó pelo ID
 
-GET {{server}}/nodes/1
+GET {{server}}/nodeRecords/1
 
 ### Consultar os indicadores
 
@@ -35,7 +35,7 @@ GET {{server}}/layers
 ### Criar um pacote
 
 # @name criarPacote
-POST {{server}}/packets
+POST {{server}}/packetRecords
 Content-Type: application/json
 
 {
@@ -49,11 +49,11 @@ Content-Type: application/json
 
 ### Buscar o pacote criado
 
-GET {{server}}/packets/{{criarPacote.response.body.$.id}}
+GET {{server}}/packetRecords/{{criarPacote.response.body.$.id}}
 
 ### Editar o pacote criado
 
-PATCH {{server}}/packets/{{criarPacote.response.body.$.id}}
+PATCH {{server}}/packetRecords/{{criarPacote.response.body.$.id}}
 Content-Type: application/json
 
 {
@@ -62,12 +62,12 @@ Content-Type: application/json
 
 ### Excluir o pacote criado
 
-DELETE {{server}}/packets/{{criarPacote.response.body.$.id}}
+DELETE {{server}}/packetRecords/{{criarPacote.response.body.$.id}}
 
 ### Criar um nó
 
 # @name criarNo
-POST {{server}}/nodes
+POST {{server}}/nodeRecords
 Content-Type: application/json
 
 {
@@ -81,11 +81,11 @@ Content-Type: application/json
 
 ### Buscar o nó criado
 
-GET {{server}}/nodes/{{criarNo.response.body.$.id}}
+GET {{server}}/nodeRecords/{{criarNo.response.body.$.id}}
 
 ### Editar parte do nó criado
 
-PATCH {{server}}/nodes/{{criarNo.response.body.$.id}}
+PATCH {{server}}/nodeRecords/{{criarNo.response.body.$.id}}
 Content-Type: application/json
 
 {
@@ -94,6 +94,6 @@ Content-Type: application/json
 
 ### Excluir o nó criado
 
-DELETE {{server}}/nodes/{{criarNo.response.body.$.id}}
+DELETE {{server}}/nodeRecords/{{criarNo.response.body.$.id}}
 
 

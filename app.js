@@ -1,5 +1,5 @@
-// Endereço do JSON Server.
-const api = "http://localhost:3000";
+const api = "/api";
+const endpointRecurso = { packets: "packetRecords", nodes: "nodeRecords" };
 const formatarNumero = new Intl.NumberFormat("en-US");
 
 // Dados que a página recebe do servidor.
@@ -274,7 +274,7 @@ function mostrarAlertas() {
 
 async function carregarPacotes() {
   const protocolo = document.querySelector("#protocol-filter")?.value || "";
-  let url = `${api}/packets`;
+  let url = `${api}/${endpointRecurso.packets}`;
   if (protocolo) url += `?protocol=${encodeURIComponent(protocolo)}`;
 
   const resposta = await fetch(url);
@@ -283,7 +283,7 @@ async function carregarPacotes() {
 }
 
 async function carregarNos() {
-  const resposta = await fetch(`${api}/nodes`);
+  const resposta = await fetch(`${api}/${endpointRecurso.nodes}`);
   nos = await lerResposta(resposta);
   mostrarNos();
   mostrarAlertas();
@@ -526,7 +526,7 @@ async function salvarRegistro(evento) {
   const dados = {};
   for (const entrada of entradas) dados[entrada.name] = entrada.value;
 
-  let url = `${api}/${recursoEditado}`;
+  let url = `${api}/${endpointRecurso[recursoEditado]}`;
   let metodo = "POST";
   if (idEditado) {
     url += `/${encodeURIComponent(idEditado)}`;
@@ -555,7 +555,7 @@ async function excluirRegistro(recurso, id) {
 
   try {
     const resposta = await fetch(
-      `${api}/${recurso}/${encodeURIComponent(id)}`,
+      `${api}/${endpointRecurso[recurso]}/${encodeURIComponent(id)}`,
       {
         method: "DELETE",
       },

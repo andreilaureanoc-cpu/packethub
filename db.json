@@ -1,5 +1,5 @@
 {
-  "packets": [
+  "packetRecords": [
     {
       "id": "18492",
       "time": "14:32:08.421",
@@ -46,7 +46,7 @@
       "size": "489 B"
     }
   ],
-  "nodes": [
+  "nodeRecords": [
     {
       "id": "1",
       "host": "edge-sp01",
@@ -156,5 +156,6 @@
         "Ethernet"
       ]
     }
-  ]
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
 }
