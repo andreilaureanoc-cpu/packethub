@@ -17,7 +17,14 @@ function mostrarLinhaVazia(tabela, quantidadeColunas, mensagem, classe) {
 function textoDaInformacao(pacote) {
   if (typeof pacote.info === "string") return pacote.info;
   if (pacote.info && pacote.info.flags) {
-    let texto = `[${pacote.info.flags.join(",")}]`; if (pacote.info.sequenceNumber) texto +=` Seq=${pacote.info.sequenceNumber}`; if (pacote.info.windowSize) texto +=` Win=${pacote.info.windowSize}`; if (pacote.info.payloadLength) texto +=` Len=${pacote.info.payloadLength}`; return texto; } if (pacote.info && pacote.info.queryType) {`${pacote.info.queryType} ${pacote.info.recordType} ${pacote.info.domain}`;
+    let texto = `[${pacote.info.flags.join(",")}]`;
+    if (pacote.info.sequenceNumber) texto += ` Seq=${pacote.info.sequenceNumber}`;
+    if (pacote.info.windowSize) texto += ` Win=${pacote.info.windowSize}`;
+    if (pacote.info.payloadLength) texto += ` Len=${pacote.info.payloadLength}`;
+    return texto;
+  }
+  if (pacote.info && pacote.info.queryType) {
+    return `${pacote.info.queryType} ${pacote.info.recordType} ${pacote.info.domain}`;
   }
   return (pacote.info && pacote.info.summary) || "—";
 }
