@@ -11,12 +11,12 @@ export function mostrarErro(erro) {
   const aviso = document.querySelector("#api-feedback");
   if (!aviso) return;
   aviso.textContent = `Não foi possível concluir a operação: ${erro.message}`;
-  aviso.classList.remove("hidden");
+  aviso.classList.remove("d-none");
 }
 
 export function limparErro() {
   const aviso = document.querySelector("#api-feedback");
   if (!aviso) return;
   aviso.textContent = "";
-  aviso.classList.add("hidden");
+  aviso.classList.add("d-none");
 }

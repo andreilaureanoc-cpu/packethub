@@ -17,24 +17,16 @@ function mostrarLinhaVazia(tabela, quantidadeColunas, mensagem, classe) {
 function textoDaInformacao(pacote) {
   if (typeof pacote.info === "string") return pacote.info;
   if (pacote.info && pacote.info.flags) {
-    let texto = `[${pacote.info.flags.join(", ")}]`;
-    if (pacote.info.sequenceNumber)
-      texto += ` Seq=${pacote.info.sequenceNumber}`;
-    if (pacote.info.windowSize) texto += ` Win=${pacote.info.windowSize}`;
-    if (pacote.info.payloadLength) texto += ` Len=${pacote.info.payloadLength}`;
-    return texto;
-  }
-  if (pacote.info && pacote.info.queryType) {
-    return `${pacote.info.queryType} ${pacote.info.recordType} ${pacote.info.domain}`;
+    let texto = `[${pacote.info.flags.join(",")}]`; if (pacote.info.sequenceNumber) texto +=` Seq=${pacote.info.sequenceNumber}`; if (pacote.info.windowSize) texto +=` Win=${pacote.info.windowSize}`; if (pacote.info.payloadLength) texto +=` Len=${pacote.info.payloadLength}`; return texto; } if (pacote.info && pacote.info.queryType) {`${pacote.info.queryType} ${pacote.info.recordType} ${pacote.info.domain}`;
   }
   return (pacote.info && pacote.info.summary) || "—";
 }
 
 function adicionarBotoesDeAcao(celula, recurso, registro, acoes) {
-  const grupo = elemento("div", "flex gap-2 font-sans whitespace-nowrap");
+  const grupo = elemento("div", "d-flex gap-2 text-nowrap");
   const editar = elemento(
     "button",
-    "font-semibold text-teal hover:underline",
+    "btn btn-link btn-sm p-0 fw-semibold text-teal",
     "Editar",
   );
   editar.type = "button";
@@ -42,7 +34,7 @@ function adicionarBotoesDeAcao(celula, recurso, registro, acoes) {
 
   const excluir = elemento(
     "button",
-    "font-semibold text-signal hover:underline",
+    "btn btn-link btn-sm p-0 fw-semibold text-coral",
     "Excluir",
   );
   excluir.type = "button";
@@ -79,22 +71,22 @@ export function mostrarPacotes(pacotes, acoes) {
       tabela,
       8,
       "Nenhum pacote encontrado.",
-      "px-5 py-8 text-center font-sans text-[#78918b]",
+      "px-5 py-5 text-center text-subdued",
     );
     return;
   }
 
   const cores = {
-    TCP: "bg-[#e7f6ee] text-teal",
-    UDP: "bg-[#fff3da] text-[#a26900]",
-    DNS: "bg-[#eef3ff] text-[#526fa6]",
-    HTTP: "bg-[#fff0ed] text-signal",
+    TCP: "bg-brand-green-pale text-teal",
+    UDP: "bg-brand-amber-pale text-amber-brand",
+    DNS: "bg-brand-blue-pale text-blue-brand",
+    HTTP: "bg-brand-coral-pale text-coral",
   };
 
   tabela.replaceChildren();
   for (let indice = 0; indice < pacotesVisiveis.length; indice++) {
     const pacote = pacotesVisiveis[indice];
-    const linha = elemento("tr", indice === 0 ? "bg-[#fffaf8]" : "");
+    const linha = elemento("tr", indice === 0 ? "bg-packet-highlight" : "");
     let idExibido = pacote.id;
     if (/^\d+$/.test(String(pacote.id))) {
       idExibido = formatarNumero.format(Number(pacote.id));
@@ -103,15 +95,15 @@ export function mostrarPacotes(pacotes, acoes) {
     adicionarCelula(
       linha,
       idExibido,
-      `px-5 py-4 font-bold ${indice === 0 ? "text-signal" : "text-[#78918b]"}`,
+      `px-5 py-4 fw-bold ${indice === 0 ? "text-coral" : "text-subdued"}`,
     );
-    adicionarCelula(linha, pacote.time, "px-5 py-4 text-[#66817a]");
+    adicionarCelula(linha, pacote.time, "px-5 py-4 text-muted-brand");
     adicionarCelula(linha, pacote.src, "px-5 py-4");
     adicionarCelula(linha, pacote.dst, "px-5 py-4");
 
     const etiqueta = elemento(
       "b",
-      `rounded px-2 py-1 font-sans ${cores[pacote.protocol] || "bg-[#eef6f1] text-[#66817a]"}`,
+      `badge rounded-1 px-2 py-1 font-body ${cores[pacote.protocol] || "bg-brand-soft text-muted-brand"}`,
       pacote.protocol,
     );
     adicionarCelula(linha, "", "px-5 py-4").appendChild(etiqueta);
@@ -141,7 +133,7 @@ export function mostrarNos(nos, acoes) {
       tabela,
       7,
       "Nenhum nó cadastrado.",
-      "px-3 py-8 text-center text-[#78918b]",
+      "px-3 py-8 text-center text-subdued",
     );
     return;
   }
@@ -149,19 +141,19 @@ export function mostrarNos(nos, acoes) {
   tabela.replaceChildren();
   for (const no of nos) {
     const linha = elemento("tr");
-    let corStatus = "signal";
-    if (no.status === "Operacional") corStatus = "teal";
-    if (no.status === "Atenção") corStatus = "[#b27608]";
+    let corStatus = "text-coral";
+    if (no.status === "Operacional") corStatus = "text-teal";
+    if (no.status === "Atenção") corStatus = "text-amber-brand";
 
-    adicionarCelula(linha, no.host, "px-3 py-3 font-semibold");
-    adicionarCelula(linha, no.ip, "px-3 py-3 font-mono");
+    adicionarCelula(linha, no.host, "px-3 py-3 fw-semibold");
+    adicionarCelula(linha, no.ip, "px-3 py-3 font-monospace");
     adicionarCelula(linha, no.service, "px-3 py-3");
     adicionarCelula(linha, no.latency, "px-3 py-3");
     adicionarCelula(linha, no.load, "px-3 py-3");
     adicionarCelula(
       linha,
       `● ${no.status}`,
-      `px-3 py-3 font-bold text-${corStatus}`,
+      `px-3 py-3 fw-bold ${corStatus}`,
     );
     adicionarBotoesDeAcao(
       adicionarCelula(linha, "", "px-3 py-3"),
@@ -177,7 +169,7 @@ export function mostrarAlertas(nos) {
   const alertas = nos.filter((no) => no.status !== "Operacional");
   document.querySelectorAll("[data-alert-count]").forEach((contador) => {
     contador.textContent = alertas.length;
-    contador.classList.toggle("hidden", alertas.length === 0);
+    contador.classList.toggle("d-none", alertas.length === 0);
   });
 
   const resumo = document.querySelector("#alert-count");
@@ -189,7 +181,7 @@ export function mostrarAlertas(nos) {
   if (!lista) return;
   if (alertas.length === 0) {
     lista.replaceChildren(
-      elemento("p", "py-12 text-center text-sm text-[#66817a]", "Nenhum host requer atenção no momento."),
+      elemento("p", "py-5 text-center small-text text-muted-brand", "Nenhum host requer atenção no momento."),
     );
     return;
   }
@@ -199,22 +191,22 @@ export function mostrarAlertas(nos) {
     const indisponivel = no.status === "Indisponível";
     const item = elemento(
       "article",
-      "grid gap-3 border-b border-[#e5eee9] py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center",
+      "d-grid gap-3 border-bottom border-brand-line py-4 grid-cols-sm-alert align-items-sm-center",
     );
     const detalhes = elemento("div");
     const titulo = elemento(
-      "h3",
-      "font-semibold",
+      "p",
+      "fs-6 fw-semibold mb-0",
       `${no.host} · ${no.status}`,
     );
     const descricao = elemento(
       "p",
-      "mt-1 text-sm text-[#66817a]",
-      `${no.ip} · ${no.service} · Carga ${no.load} · Latência ${no.latency}`,
+      "mt-1 small-text text-muted-brand",
+      `${no.ip} · ${no.service} Carga ${no.load} Latência ${no.latency}`,
     );
     const gravidade = elemento(
       "span",
-      `inline-flex rounded px-2.5 py-1 text-xs font-bold ${indisponivel ? "bg-[#fff0ed] text-signal" : "bg-[#fff3da] text-[#a26900]"}`,
+      `d-inline-flex badge rounded-1 px-2 py-1 tiny-text fw-bold ${indisponivel ? "bg-brand-coral-pale text-coral" : "bg-brand-amber-pale text-amber-brand"}`,
       indisponivel ? "Indisponível" : "Atenção",
     );
     detalhes.append(titulo, descricao);
@@ -243,7 +235,6 @@ export function mostrarResumo(resumoCaptura) {
     const destino = document.querySelector(`[data-report="${campo}"]`);
     if (destino) destino.textContent = valor;
   }
-
   for (const protocolo of resumoCaptura.protocols) {
     const cartao = document.querySelector(
       `[data-protocol="${protocolo.name}"]`,
@@ -282,12 +273,12 @@ export function mostrarCaptura(captura) {
   const status = document.querySelector("#capture-status");
   if (status) {
     status.lastChild.textContent = captura.active
-      ? " Captura em andamento"
-      : " Captura pausada";
-    status.classList.toggle("text-signal", captura.active);
-    status.classList.toggle("text-[#78918b]", !captura.active);
-    status.querySelector("i").classList.toggle("bg-signal", captura.active);
-    status.querySelector("i").classList.toggle("bg-[#78918b]", !captura.active);
+      ? "Captura em andamento"
+      : "Captura pausada";
+    status.classList.toggle("text-coral", captura.active);
+    status.classList.toggle("text-subdued", !captura.active);
+    status.querySelector("i").classList.toggle("bg-brand-coral", captura.active);
+    status.querySelector("i").classList.toggle("bg-subdued", !captura.active);
   }
 
   const botao = document.querySelector("#capture-toggle");
@@ -299,8 +290,8 @@ export function mostrarCaptura(captura) {
   if (estadoAgente) estadoAgente.textContent = captura.active ? "AO VIVO" : "PAUSADA";
   const indicadorAgente = document.querySelector("#capture-agent-indicator");
   if (indicadorAgente) {
-    indicadorAgente.classList.toggle("bg-[#7ed8bb]", captura.active);
-    indicadorAgente.classList.toggle("bg-[#f06449]", !captura.active);
+    indicadorAgente.classList.toggle("bg-brand-mint", captura.active);
+    indicadorAgente.classList.toggle("bg-brand-coral", !captura.active);
   }
 }
 
@@ -309,7 +300,7 @@ export function mostrarCamadas(camadas) {
     const linha = document.querySelector(`#layer-${camada.id}`);
     if (linha) {
       const protocolos = linha.querySelector("b") || linha;
-      protocolos.textContent = camada.protocols.join(" · ");
+      protocolos.textContent = camada.protocols.join("·");
     }
   }
 }

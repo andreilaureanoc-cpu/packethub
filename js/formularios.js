@@ -35,7 +35,7 @@ export function abrirFormulario(recurso, registro = null) {
   for (const [nome, rotulo, tipo, opcoes] of campos[recurso]) {
     const etiqueta = elemento(
       "label",
-      "text-xs font-semibold text-[#52635f]",
+      "form-label tiny-text fw-semibold text-muted-brand",
       rotulo,
     );
     const entrada = document.createElement(
@@ -46,8 +46,8 @@ export function abrirFormulario(recurso, registro = null) {
     entrada.required = true;
     entrada.className =
       tipo === "select"
-        ? "mt-1 w-full rounded-lg border border-[#d3e1db] bg-white px-3 py-2.5 text-sm"
-        : "mt-1 w-full rounded-lg border border-[#d3e1db] px-3 py-2.5 text-sm outline-none focus:border-[#137f78]";
+        ? "form-select mt-1"
+        : "form-control mt-1";
 
     if (tipo === "select") {
       for (const opcao of opcoes) {
