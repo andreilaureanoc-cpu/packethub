@@ -133,11 +133,6 @@ async function atualizarCaptura(alteracoes) {
   }
 }
 
-document.querySelector("#add-packet")?.addEventListener("click", () => {
-  recursoEditado = "packets";
-  idEditado = null;
-  abrirFormulario("packets");
-});
 document.querySelector("#add-node")?.addEventListener("click", () => {
   recursoEditado = "nodes";
   idEditado = null;

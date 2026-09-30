@@ -253,7 +253,13 @@ export function mostrarResumo(resumoCaptura) {
       );
       cartao.querySelector("p").textContent = protocolo.label;
       const barra = cartao.querySelector("[data-protocol-bar]");
-      if (barra) barra.style.width = protocolo.percentage;
+      if (barra) {
+        barra.style.width = protocolo.percentage;
+        barra.parentElement.setAttribute(
+          "aria-valuenow",
+          String(Number.parseFloat(protocolo.percentage) || 0),
+        );
+      }
     }
   }
 }
