@@ -162,9 +162,11 @@ document.querySelector("#record-form")?.addEventListener("submit", salvarRegistr
 document.querySelector("#capture-toggle")?.addEventListener("click", () =>
   atualizarCaptura({ active: !captura.active }),
 );
-document.querySelector("#capture-filter")?.addEventListener("change", (evento) =>
-  atualizarCaptura({ filter: evento.currentTarget.value }),
-);
+document.querySelectorAll("[data-capture-filter]").forEach((filtro) => {
+  filtro.addEventListener("change", (evento) =>
+    atualizarCaptura({ filter: evento.currentTarget.value }),
+  );
+});
 
 const filtroInicial = document.querySelector("#protocol-filter");
 if (filtroInicial) {

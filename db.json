@@ -66,6 +66,15 @@
       "status": "Operacional"
     },
     {
+      "id": "3",
+      "host": "web-prod03",
+      "ip": "10.0.18.30",
+      "service": "HTTP / HTTPS",
+      "latency": "10 ms",
+      "load": "52%",
+      "status": "Operacional"
+    },
+    {
       "id": "4",
       "host": "api-prod03",
       "ip": "10.0.22.16",

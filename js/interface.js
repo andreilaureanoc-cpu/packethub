@@ -103,7 +103,7 @@ export function mostrarPacotes(pacotes, acoes) {
 
     const etiqueta = elemento(
       "b",
-      `badge rounded-1 px-2 py-1 font-body ${cores[pacote.protocol] || "bg-brand-soft text-muted-brand"}`,
+      `badge rounded-1 px-2 py-1 ${cores[pacote.protocol] || "bg-brand-soft text-muted-brand"}`,
       pacote.protocol,
     );
     adicionarCelula(linha, "", "px-5 py-4").appendChild(etiqueta);
@@ -133,7 +133,7 @@ export function mostrarNos(nos, acoes) {
       tabela,
       7,
       "Nenhum nó cadastrado.",
-      "px-3 py-8 text-center text-subdued",
+      "px-3 py-4 text-center text-subdued",
     );
     return;
   }
@@ -258,8 +258,9 @@ export function mostrarCaptura(captura) {
   if (comandoCaptura) comandoCaptura.textContent = captura.command;
   const duracaoCaptura = document.querySelector("#capture-duration");
   if (duracaoCaptura) duracaoCaptura.textContent = captura.duration;
-  const filtroCaptura = document.querySelector("#capture-filter");
-  if (filtroCaptura) filtroCaptura.value = captura.filter;
+  document.querySelectorAll("[data-capture-filter]").forEach((filtro) => {
+    filtro.value = captura.filter;
+  });
   const camposRelatorio = {
     interface: captura.interface || "—",
     status: captura.active ? "Em andamento" : "Pausada",

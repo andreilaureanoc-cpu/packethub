@@ -38,7 +38,7 @@
 - [x] Visualização de métricas (CPU, Memória, Latência) e status de servidores no Dashboard com dados fictícios
 - [x] Layout responsivo para as telas do sistema (Dashboard, Nós, Alertas e Configurações)
 - [ ] Filtro e busca dinâmica por IP, host e status dos serviços de rede (HTTP, DNS, SSH, DHCP)
-- [ ] Consumo de API simulada via `json-server` com dados dinâmicos de servidores e incidentes (Projeto 1.1)
+- [x] Consumo de API simulada via `json-server` com dados dinâmicos de servidores e incidentes (Projeto 1.1)
 - [ ] Autenticação e controle de acesso de operadores de rede (Login/Logout com JWT)
 - [ ] Servidor de API RESTful em Express.js para coleta e gerenciamento dos nós de rede (Projeto 1.2)
 - [ ] Persistência de registros de métricas, histórico de uptime e incidentes em Banco de Dados com Prisma ORM
