@@ -4,27 +4,26 @@
     <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Hosts em atenção ou indisponíveis na rede monitorada." />
     <title>PacketHub | Alertas</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>tailwind.config = { theme: { extend: { fontFamily: { display: ["Space Grotesk", "sans-serif"], body: ["DM Sans", "sans-serif"] }, colors: { mist: "#f3f7f5", teal: "#137f78", signal: "#f06449" } } } };</script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="./styles.css" rel="stylesheet" />
   </head>
-  <body class="bg-mist font-body text-[#17242a] antialiased">
-    <div class="min-h-screen lg:grid lg:grid-cols-[248px_1fr]">
-      <aside class="flex flex-col bg-[#193235] px-5 py-6 text-white lg:min-h-screen lg:px-6">
-        <a href="index.html" class="mb-10 flex items-center gap-3" aria-label="PacketHub início"><img src="images/logo-camadas.svg" alt="" class="h-11 w-11" /><span class="font-display text-xl font-bold">Packet<span class="text-[#7ed8bb]">Hub</span></span></a>
-        <nav aria-label="Navegação principal" class="space-y-1">
-          <p class="mb-3 px-3 text-[10px] font-bold uppercase tracking-[.2em] text-[#83a9a2]">Monitoramento</p><a href="index.html" class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm text-[#b4cbc5] hover:bg-[#2a4c4d]">◫ &nbsp; Visão geral</a><a href="nodes.html" class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm text-[#b4cbc5] hover:bg-[#2a4c4d]">⌘ &nbsp; Nós monitorados</a>
-          <p class="mb-3 mt-6 px-3 text-[10px] font-bold uppercase tracking-[.2em] text-[#83a9a2]">Análise</p><a href="packets.html" class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm text-[#b4cbc5] hover:bg-[#2a4c4d]">⌁ &nbsp; Pacotes</a><a href="protocols.html" class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm text-[#b4cbc5] hover:bg-[#2a4c4d]">◈ &nbsp; Protocolos</a>
-          <p class="mb-3 mt-6 px-3 text-[10px] font-bold uppercase tracking-[.2em] text-[#83a9a2]">Operação</p><a href="alerts.html" aria-current="page" class="flex items-center justify-between rounded-lg bg-[#2a4c4d] px-3 py-3 text-sm font-semibold"><span><span class="text-[#7ed8bb]">!</span> &nbsp; Alertas</span><b data-alert-count class="rounded-full bg-[#f06449] px-2 py-0.5 text-[10px]">0</b></a><a href="reports.html" class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm text-[#b4cbc5] hover:bg-[#2a4c4d]">▤ &nbsp; Relatórios</a>
+  <body class="page-bg font-body text-ink">
+    <div class="min-vh-100 app-layout">
+      <aside class="d-flex flex-column bg-brand-dark px-5 py-4 text-white px-lg-4">
+        <a href="index.html" class="mb-5 d-flex align-items-center gap-3" aria-label="PacketHub início"><img src="images/logo-camadas.svg" alt="" class="logo-size" /><span class="font-display fs-4 fw-bold">Packet<span class="text-brand-mint">Hub</span></span></a>
+        <nav aria-label="Navegação principal" class="nav-stack gap-1">
+          <p class="mb-3 px-3 micro-text fw-bold text-uppercase tracking-widest-brand text-brand-soft">Monitoramento</p><a href="index.html" class="d-flex align-items-center gap-3 rounded-2 px-3 py-3 small-text text-sidebar hover-nav">◫ &nbsp; Visão geral</a><a href="nodes.html" class="d-flex align-items-center gap-3 rounded-2 px-3 py-3 small-text text-sidebar hover-nav">⌘ &nbsp; Nós monitorados</a>
+          <p class="mb-3 mt-5 px-3 micro-text fw-bold text-uppercase tracking-widest-brand text-brand-soft">Análise</p><a href="packets.html" class="d-flex align-items-center gap-3 rounded-2 px-3 py-3 small-text text-sidebar hover-nav">⌁ &nbsp; Pacotes</a><a href="protocols.html" class="d-flex align-items-center gap-3 rounded-2 px-3 py-3 small-text text-sidebar hover-nav">◈ &nbsp; Protocolos</a>
+          <p class="mb-3 mt-5 px-3 micro-text fw-bold text-uppercase tracking-widest-brand text-brand-soft">Operação</p><a href="alerts.html" aria-current="page" class="d-flex align-items-center justify-content-between rounded-2 bg-nav-active px-3 py-3 small-text fw-semibold"><span><span class="text-brand-mint">!</span> &nbsp; Alertas</span><b data-alert-count class="rounded-circle bg-brand-coral px-2 py-1 micro-text">0</b></a><a href="reports.html" class="d-flex align-items-center gap-3 rounded-2 px-3 py-3 small-text text-sidebar hover-nav">▤ &nbsp; Relatórios</a>
         </nav>
-        <div class="mt-auto hidden rounded-xl border border-[#3a5b58] bg-[#224344] p-4 lg:block"><div class="mb-3 flex justify-between text-xs font-semibold"><span>Agente tcpdump</span><i id="capture-agent-indicator" class="h-2 w-2 rounded-full bg-[#7ed8bb]"></i></div><p id="capture-agent-interface" class="text-[11px] text-[#9ebbb4]">Interface any</p><p id="capture-agent-state" class="mt-3 text-[10px] text-[#9ebbb4]">AO VIVO</p></div>
+        <div class="mt-auto d-none rounded-3 border border-brand-green bg-sidebar-panel p-4 d-lg-block"><div class="mb-3 d-flex justify-content-between tiny-text fw-semibold"><span>Agente tcpdump</span><i id="capture-agent-indicator" class="indicator-size rounded-circle bg-brand-mint"></i></div><p id="capture-agent-interface" class="nano-text text-brand-faint">Interface any</p><p id="capture-agent-state" class="mt-3 micro-text text-brand-faint">AO VIVO</p></div>
       </aside>
-      <main class="min-w-0 px-5 py-6 sm:px-8 lg:px-12 lg:py-9">
-        <header class="mb-8 border-b border-[#dbe7e1] pb-7"><p class="mb-2 text-xs font-bold uppercase tracking-[.18em] text-teal">PacketHub / operação</p><h1 class="font-display text-3xl font-bold sm:text-4xl">Alertas</h1><p class="mt-2 text-sm text-[#66817a]">Hosts cujo status atual exige acompanhamento.</p></header>
-        <div id="api-feedback" class="mb-5 hidden rounded-lg border border-[#f06449] bg-[#fff0ed] px-4 py-3 text-sm text-[#9a3d2d]" role="alert"></div>
-        <section class="rounded-xl border border-[#d3e1db] bg-white p-5 sm:p-6" aria-labelledby="alerts-title"><div class="mb-4 flex flex-wrap items-end justify-between gap-3"><div><p class="mb-1 text-xs font-bold uppercase tracking-[.18em] text-teal">Saúde da rede</p><h2 id="alerts-title" class="font-display text-xl font-bold">Hosts para verificar</h2></div><span id="alert-count" class="text-xs text-[#78918b]" aria-live="polite">Carregando alertas</span></div><div id="alerts-body"></div></section>
-        <p class="mt-4 text-xs text-[#78918b]">Alertas derivados do status dos nós cadastrados; ainda não há histórico de incidentes.</p>
-        <footer class="mt-8 border-t border-[#dbe7e1] pt-5 text-[11px] text-[#78918b]">PacketHub · Agente de captura v1.4.2 · Dados fictícios para demonstração</footer>
+      <main class="min-w-0 px-5 py-4 px-sm-4 px-lg-5 py-lg-5">
+        <header class="mb-5 border-bottom border-brand-light pb-4"><p class="mb-2 tiny-text fw-bold text-uppercase tracking-wider-brand text-teal">PacketHub / operação</p><h1 class="font-display fs-2 fw-bold fs-sm-1">Alertas</h1><p class="mt-2 small-text text-muted-brand">Hosts cujo status atual exige acompanhamento.</p></header>
+        <div id="api-feedback" class="mb-4 d-none rounded-2 border border-brand-coral bg-brand-coral-pale px-4 py-3 small-text text-error-brand" role="alert"></div>
+        <section class="rounded-3 border border-brand bg-white p-5 p-sm-4" aria-labelledby="alerts-title"><div class="mb-3 d-flex flex-wrap align-items-end justify-content-between gap-3"><div><p class="mb-1 tiny-text fw-bold text-uppercase tracking-wider-brand text-teal">Saúde da rede</p><h2 id="alerts-title" class="font-display fs-4 fw-bold">Hosts para verificar</h2></div><span id="alert-count" class="tiny-text text-subdued" aria-live="polite">Carregando alertas</span></div><div id="alerts-body"></div></section>
+        <p class="mt-3 tiny-text text-subdued">Alertas derivados do status dos nós cadastrados; ainda não há histórico de incidentes.</p>
+        <footer class="mt-5 border-top border-brand-light pt-5 nano-text text-subdued">PacketHub · Agente de captura v1.4.2 · Dados fictícios para demonstração</footer>
       </main>
     </div>
     <script type="module" src="./app.js"></script>

@@ -66,15 +66,6 @@
       "status": "Operacional"
     },
     {
-      "id": "3",
-      "host": "gateway-rj01",
-      "ip": "172.16.0.01",
-      "service": "DHCP / Firewall",
-      "latency": "24 ms",
-      "load": "78%",
-      "status": "Atenção"
-    },
-    {
       "id": "4",
       "host": "api-prod03",
       "ip": "10.0.22.16",
@@ -91,6 +82,15 @@
       "latency": "—",
       "load": "0%",
       "status": "Indisponível"
+    },
+    {
+      "id": "6",
+      "host": "auth-prod05",
+      "ip": "10.0.31.18",
+      "service": "OAuth / HTTPS",
+      "latency": "184 ms",
+      "load": "92%",
+      "status": "Atenção"
     }
   ],
   "stats": {
@@ -156,5 +156,6 @@
         "Ethernet"
       ]
     }
-  ]
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
 }

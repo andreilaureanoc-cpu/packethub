@@ -8,129 +8,111 @@
       content="Dashboard de captura e inspeção de pacotes do PacketHub."
     />
     <title>PacketHub | Visão geral</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              display: ["Space Grotesk", "sans-serif"],
-              body: ["DM Sans", "sans-serif"],
-            },
-            colors: { mist: "#f3f7f5", teal: "#137f78", signal: "#f06449" },
-          },
-        },
-      };
-    </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="./styles.css" rel="stylesheet" />
   </head>
-  <body class="bg-mist font-body text-[#17242a] antialiased">
-    <div class="min-h-screen lg:grid lg:grid-cols-[248px_1fr]">
+  <body class="page-bg font-body text-ink">
+    <div class="min-vh-100 app-layout">
       <aside
-        class="flex flex-col bg-[#193235] px-5 py-6 text-white lg:min-h-screen lg:px-6"
+        class="d-flex flex-column bg-brand-dark px-5 py-4 text-white px-lg-4"
       >
         <a
             href="index.html"
-          class="mb-10 flex items-center gap-3"
+          class="mb-5 d-flex align-items-center gap-3"
           aria-label="PacketHub início"
-          ><img src="images/logo-camadas.svg" alt="" class="h-11 w-11" /><span
-            class="font-display text-xl font-bold"
-            >Packet<span class="text-[#7ed8bb]">Hub</span></span
+          ><img src="images/logo-camadas.svg" alt="" class="logo-size" /><span
+            class="font-display fs-4 fw-bold"
+            >Packet<span class="text-brand-mint">Hub</span></span
           ></a
         >
-        <nav aria-label="Navegação principal" class="space-y-1">
+        <nav aria-label="Navegação principal" class="nav-stack gap-1">
           <p
-            class="mb-3 px-3 text-[10px] font-bold uppercase tracking-[.2em] text-[#83a9a2]"
+            class="mb-3 px-3 micro-text fw-bold text-uppercase tracking-widest-brand text-brand-soft"
           >
             Monitoramento
           </p>
           <a
             href="index.html"
             aria-current="page"
-            class="flex items-center gap-3 rounded-lg bg-[#2a4c4d] px-3 py-3 text-sm font-semibold"
-            ><span class="text-[#7ed8bb]">◫</span> Visão geral</a
+            class="d-flex align-items-center gap-3 rounded-2 bg-nav-active px-3 py-3 small-text fw-semibold"
+            ><span class="text-brand-mint">◫</span> Visão geral</a
           ><a
             href="nodes.html"
-            class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm text-[#b4cbc5] hover:bg-[#2a4c4d]"
+            class="d-flex align-items-center gap-3 rounded-2 px-3 py-3 small-text text-sidebar hover-nav"
             ><span>⌘</span> Nós monitorados</a
           >
           <p
-            class="mb-3 mt-6 px-3 text-[10px] font-bold uppercase tracking-[.2em] text-[#83a9a2]"
+            class="mb-3 mt-5 px-3 micro-text fw-bold text-uppercase tracking-widest-brand text-brand-soft"
           >
             Análise
           </p>
           <a
             href="packets.html"
-            class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm text-[#b4cbc5] hover:bg-[#2a4c4d]"
+            class="d-flex align-items-center gap-3 rounded-2 px-3 py-3 small-text text-sidebar hover-nav"
             ><span>⌁</span> Pacotes</a
           ><a
             href="protocols.html"
-            class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm text-[#b4cbc5] hover:bg-[#2a4c4d]"
+            class="d-flex align-items-center gap-3 rounded-2 px-3 py-3 small-text text-sidebar hover-nav"
             ><span>◈</span> Protocolos</a
           >
           <p
-            class="mb-3 mt-6 px-3 text-[10px] font-bold uppercase tracking-[.2em] text-[#83a9a2]"
+            class="mb-3 mt-5 px-3 micro-text fw-bold text-uppercase tracking-widest-brand text-brand-soft"
           >
             Operação
           </p>
           <a
             href="alerts.html"
-            class="flex items-center justify-between rounded-lg px-3 py-3 text-sm text-[#b4cbc5] hover:bg-[#2a4c4d]"
+            class="d-flex align-items-center justify-content-between rounded-2 px-3 py-3 small-text text-sidebar hover-nav"
             ><span>! &nbsp; Alertas</span
-            ><b data-alert-count class="rounded-full bg-[#f06449] px-2 py-0.5 text-[10px]"
+            ><b data-alert-count class="rounded-circle bg-brand-coral px-2 py-1 micro-text"
               >0</b
             ></a
           ><a
             href="reports.html"
-            class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm text-[#b4cbc5] hover:bg-[#2a4c4d]"
+            class="d-flex align-items-center gap-3 rounded-2 px-3 py-3 small-text text-sidebar hover-nav"
             ><span>▤</span> Relatórios</a
           >
         </nav>
         <div
-          class="mt-auto hidden rounded-xl border border-[#3a5b58] bg-[#224344] p-4 lg:block"
+          class="mt-auto d-none rounded-3 border border-brand-green bg-sidebar-panel p-4 d-lg-block"
         >
-          <div class="mb-3 flex justify-between text-xs font-semibold">
+          <div class="mb-3 d-flex justify-content-between tiny-text fw-semibold">
             <span>Agente tcpdump</span
-            ><i id="capture-agent-indicator" class="h-2 w-2 rounded-full bg-[#7ed8bb]"></i>
+            ><i id="capture-agent-indicator" class="indicator-size rounded-circle bg-brand-mint"></i>
           </div>
-          <p id="capture-agent-interface" class="text-[11px] text-[#9ebbb4]">Interface any</p>
-          <p id="capture-agent-state" class="mt-3 text-[10px] text-[#9ebbb4]">AO VIVO</p>
+          <p id="capture-agent-interface" class="nano-text text-brand-faint">Interface any</p>
+          <p id="capture-agent-state" class="mt-3 micro-text text-brand-faint">AO VIVO</p>
         </div>
       </aside>
-      <main class="min-w-0 px-5 py-6 sm:px-8 lg:px-12 lg:py-9">
+      <main class="min-w-0 px-5 py-4 px-sm-4 px-lg-5 py-lg-5">
         <header
-          class="mb-8 flex flex-col gap-6 border-b border-[#dbe7e1] pb-7 xl:flex-row xl:items-center xl:justify-between"
+          class="mb-5 d-flex flex-column gap-6 border-bottom border-brand-light pb-4 flex-xl-row align-items-xl-center justify-content-xl-between"
         >
           <div>
             <p
-              class="mb-2 text-xs font-bold uppercase tracking-[.18em] text-teal"
+              class="mb-2 tiny-text fw-bold text-uppercase tracking-wider-brand text-teal"
             >
               PacketHub / monitoramento
             </p>
-            <h1 class="font-display text-3xl font-bold sm:text-4xl">
+            <h1 class="font-display fs-2 fw-bold fs-sm-1">
               Visão geral
             </h1>
           </div>
-          <div class="flex items-center justify-between gap-4">
+          <div class="d-flex align-items-center justify-content-between gap-4">
             <a
               href="#pages"
-              class="rounded-lg bg-[#137f78] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#106b66]"
+              class="btn btn-brand fw-bold"
               >Explorar páginas</a
             >
-            <div class="border-l border-[#dbe7e1] pl-4">
-              <p class="hidden text-right text-sm font-bold sm:block">
+            <div class="border-start border-brand-light pl-4">
+              <p class="d-none text-end small-text fw-bold d-sm-block">
                 Gabriel Palmeira
               </p>
-              <p class="hidden text-right text-[11px] text-[#78918b] sm:block">
+              <p class="d-none text-end nano-text text-subdued d-sm-block">
                 Analista de rede
               </p>
               <span
-                class="mx-auto grid h-10 w-10 place-items-center rounded-full bg-[#f3b44b] font-display font-bold"
+                class="mx-auto d-grid avatar-size justify-content-center align-items-center rounded-circle bg-brand-avatar font-display fw-bold"
                 >GP</span
               >
             </div>
@@ -138,83 +120,83 @@
         </header>
         <div
           id="api-feedback"
-          class="mb-5 hidden rounded-lg border border-[#f06449] bg-[#fff0ed] px-4 py-3 text-sm text-[#9a3d2d]"
+          class="mb-4 d-none rounded-2 border border-brand-coral bg-brand-coral-pale px-4 py-3 small-text text-error-brand"
           role="alert"
         ></div>
         <section
           id="capture"
-          class="mb-7 rounded-xl border border-[#c7ddd3] bg-white p-5 sm:p-6"
+          class="mb-4 rounded-3 border border-brand-green bg-white p-5 p-sm-4"
         >
           <div
-            class="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"
+            class="mb-4 d-flex flex-column gap-4 flex-lg-row align-items-lg-center justify-content-lg-between"
           >
             <div>
               <div
                 id="capture-status"
-                class="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-signal"
+                class="mb-2 d-flex align-items-center gap-2 tiny-text fw-bold text-uppercase tracking-wide-brand text-coral"
               >
-                <i class="h-2.5 w-2.5 rounded-full bg-signal"></i> Captura em
+                <i class="dot-size rounded-circle bg-brand-coral"></i> Captura em
                 andamento
               </div>
-              <h2 class="font-display text-xl font-bold">
+              <h2 class="font-display fs-4 fw-bold">
                 Tráfego da interface
                 <span id="capture-interface" class="text-teal">any</span>
               </h2>
             </div>
-            <div class="flex gap-2 text-xs text-[#66817a]">
+            <div class="d-flex gap-2 tiny-text text-muted-brand">
               <span
                 id="capture-command"
-                class="rounded bg-[#eef6f1] px-3 py-2 font-mono"
+                class="rounded-1 bg-brand-soft px-3 py-2 font-monospace"
                 >tcpdump -i any</span
               >
               <span
                 id="capture-duration"
-                class="rounded border border-[#d3e1db] px-3 py-2"
+                class="rounded-1 border border-brand px-3 py-2"
                 >00:18:42</span
               >
             </div>
           </div>
-          <div class="mb-6 flex justify-end">
+          <div class="mb-5 d-flex justify-content-end">
             <button
               id="capture-toggle"
               type="button"
-              class="rounded-lg bg-signal px-5 py-3 text-xs font-bold text-white"
+              class="btn btn-danger-brand fw-bold"
             >
               Parar captura
             </button>
           </div>
-          <div class="grid gap-4 border-t border-[#e5eee9] pt-5 sm:grid-cols-4">
+          <div class="d-grid gap-4 border-top border-brand-line pt-5 grid-cols-sm-4">
             <div>
-              <p class="text-[10px] font-bold uppercase text-[#78918b]">
+              <p class="micro-text fw-bold text-uppercase text-subdued">
                 Pacotes capturados
               </p>
-              <p id="stat-captured" class="font-display text-2xl font-bold">
+              <p id="stat-captured" class="font-display fs-3 fw-bold">
                 -
               </p>
             </div>
             <div>
-              <p class="text-[10px] font-bold uppercase text-[#78918b]">
+              <p class="micro-text fw-bold text-uppercase text-subdued">
                 Taxa atual
               </p>
-              <p class="font-display text-2xl font-bold">
+              <p class="font-display fs-3 fw-bold">
                 <span id="stat-rate">-</span> <small>pkt/s</small>
               </p>
             </div>
             <div>
-              <p class="text-[10px] font-bold uppercase text-[#78918b]">
+              <p class="micro-text fw-bold text-uppercase text-subdued">
                 Dados analisados
               </p>
-              <p class="font-display text-2xl font-bold">
+              <p class="font-display fs-3 fw-bold">
                 <span id="stat-data">-</span> <small>MB</small>
               </p>
             </div>
             <div>
-              <p class="text-[10px] font-bold uppercase text-[#78918b]">
+              <p class="micro-text fw-bold text-uppercase text-subdued">
                 Descartados
               </p>
               <p
                 id="stat-dropped"
-                class="font-display text-2xl font-bold text-signal"
+                class="font-display fs-3 fw-bold text-coral"
               >
                 -
               </p>
@@ -223,85 +205,85 @@
         </section>
         <section
           id="protocols"
-          class="mb-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
+          class="mb-4 d-grid gap-4 grid-cols-sm-2 grid-cols-xl-4"
         >
           <a
             href="protocols.html"
             data-protocol="TCP"
-            class="block rounded-xl border border-[#d3e1db] bg-white p-4 hover:border-teal"
+            class="d-block rounded-3 border border-brand bg-white p-4 hover-brand"
           >
-            <div class="mb-4 flex justify-between">
-              <b class="rounded bg-[#e7f6ee] px-2 py-1 text-xs text-teal">TCP</b
-              ><span class="text-xs text-[#78918b]">-</span>
+            <div class="mb-3 d-flex justify-content-between">
+              <b class="rounded-1 bg-brand-green-pale px-2 py-1 tiny-text text-teal">TCP</b
+              ><span class="tiny-text text-subdued">-</span>
             </div>
-            <strong class="font-display text-2xl">-</strong>
-            <p class="mt-1 text-xs text-[#78918b]">Conexões observadas</p>
+            <strong class="font-display fs-3">-</strong>
+            <p class="mt-1 tiny-text text-subdued">Conexões observadas</p>
           </a>
           <a
             href="protocols.html"
             data-protocol="UDP"
-            class="block rounded-xl border border-[#d3e1db] bg-white p-4 hover:border-teal"
+            class="d-block rounded-3 border border-brand bg-white p-4 hover-brand"
           >
-            <div class="mb-4 flex justify-between">
-              <b class="rounded bg-[#fff3da] px-2 py-1 text-xs text-[#a26900]"
+            <div class="mb-3 d-flex justify-content-between">
+              <b class="rounded-1 bg-brand-amber-pale px-2 py-1 tiny-text text-amber-brand"
                 >UDP</b
-              ><span class="text-xs text-[#78918b]">-</span>
+              ><span class="tiny-text text-subdued">-</span>
             </div>
-            <strong class="font-display text-2xl">-</strong>
-            <p class="mt-1 text-xs text-[#78918b]">Datagramas observados</p>
+            <strong class="font-display fs-3">-</strong>
+            <p class="mt-1 tiny-text text-subdued">Datagramas observados</p>
           </a>
           <a
             href="protocols.html"
             data-protocol="DNS"
-            class="block rounded-xl border border-[#d3e1db] bg-white p-4 hover:border-teal"
+            class="d-block rounded-3 border border-brand bg-white p-4 hover-brand"
           >
-            <div class="mb-4 flex justify-between">
-              <b class="rounded bg-[#eef3ff] px-2 py-1 text-xs text-[#526fa6]"
+            <div class="mb-3 d-flex justify-content-between">
+              <b class="rounded-1 bg-brand-blue-pale px-2 py-1 tiny-text text-blue-brand"
                 >DNS</b
-              ><span class="text-xs text-[#78918b]">-</span>
+              ><span class="tiny-text text-subdued">-</span>
             </div>
-            <strong class="font-display text-2xl">-</strong>
-            <p class="mt-1 text-xs text-[#78918b]">Consultas resolvidas</p>
+            <strong class="font-display fs-3">-</strong>
+            <p class="mt-1 tiny-text text-subdued">Consultas resolvidas</p>
           </a>
           <a
             href="protocols.html"
             data-protocol="HTTP"
-            class="block rounded-xl border border-[#d3e1db] bg-white p-4 hover:border-teal"
+            class="d-block rounded-3 border border-brand bg-white p-4 hover-brand"
           >
-            <div class="mb-4 flex justify-between">
-              <b class="rounded bg-[#fff0ed] px-2 py-1 text-xs text-signal"
+            <div class="mb-3 d-flex justify-content-between">
+              <b class="rounded-1 bg-brand-coral-pale px-2 py-1 tiny-text text-coral"
                 >HTTP</b
-              ><span class="text-xs text-[#78918b]">-</span>
+              ><span class="tiny-text text-subdued">-</span>
             </div>
-            <strong class="font-display text-2xl">-</strong>
-            <p class="mt-1 text-xs text-[#78918b]">Requisições analisadas</p>
+            <strong class="font-display fs-3">-</strong>
+            <p class="mt-1 tiny-text text-subdued">Requisições analisadas</p>
           </a>
         </section>
-        <section id="pages" aria-labelledby="pages-title" class="mb-7">
-          <div class="mb-4">
-            <p class="mb-1 text-xs font-bold uppercase tracking-[.18em] text-teal">Acesso rápido</p>
-            <h2 id="pages-title" class="font-display text-xl font-bold">Explorar o PacketHub</h2>
+        <section id="pages" aria-labelledby="pages-title" class="mb-4">
+          <div class="mb-3">
+            <p class="mb-1 tiny-text fw-bold text-uppercase tracking-wider-brand text-teal">Acesso rápido</p>
+            <h2 id="pages-title" class="font-display fs-4 fw-bold">Explorar o PacketHub</h2>
           </div>
-          <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            <a href="packets.html" class="flex items-center justify-between gap-4 rounded-lg border border-[#d3e1db] bg-white p-4 hover:border-teal">
-              <span><b class="block text-sm">Pacotes</b><span class="mt-1 block text-xs text-[#78918b]">Buscar, filtrar e editar registros de tráfego.</span></span><span aria-hidden="true" class="text-lg text-teal">→</span>
+          <div class="d-grid gap-3 grid-cols-sm-2 grid-cols-xl-3">
+            <a href="packets.html" class="d-flex align-items-center justify-content-between gap-4 rounded-2 border border-brand bg-white p-4 hover-brand">
+              <span><b class="d-block small-text">Pacotes</b><span class="mt-1 d-block tiny-text text-subdued">Buscar, filtrar e editar registros de tráfego.</span></span><span aria-hidden="true" class="fs-5 text-teal">→</span>
             </a>
-            <a href="nodes.html" class="flex items-center justify-between gap-4 rounded-lg border border-[#d3e1db] bg-white p-4 hover:border-teal">
-              <span><b class="block text-sm">Nós monitorados</b><span id="node-count" class="mt-1 block text-xs text-[#78918b]">Carregando hosts</span></span><span aria-hidden="true" class="text-lg text-teal">→</span>
+            <a href="nodes.html" class="d-flex align-items-center justify-content-between gap-4 rounded-2 border border-brand bg-white p-4 hover-brand">
+              <span><b class="d-block small-text">Nós monitorados</b><span id="node-count" class="mt-1 d-block tiny-text text-subdued">Carregando hosts</span></span><span aria-hidden="true" class="fs-5 text-teal">→</span>
             </a>
-            <a href="protocols.html" class="flex items-center justify-between gap-4 rounded-lg border border-[#d3e1db] bg-white p-4 hover:border-teal">
-              <span><b class="block text-sm">Protocolos</b><span class="mt-1 block text-xs text-[#78918b]">Compare a distribuição e as camadas da rede.</span></span><span aria-hidden="true" class="text-lg text-teal">→</span>
+            <a href="protocols.html" class="d-flex align-items-center justify-content-between gap-4 rounded-2 border border-brand bg-white p-4 hover-brand">
+              <span><b class="d-block small-text">Protocolos</b><span class="mt-1 d-block tiny-text text-subdued">Compare a distribuição e as camadas da rede.</span></span><span aria-hidden="true" class="fs-5 text-teal">→</span>
             </a>
-            <a href="alerts.html" class="flex items-center justify-between gap-4 rounded-lg border border-[#d3e1db] bg-white p-4 hover:border-teal">
-              <span><b class="block text-sm">Alertas</b><span id="alert-count" class="mt-1 block text-xs text-[#78918b]">Carregando alertas</span></span><span aria-hidden="true" class="text-lg text-teal">→</span>
+            <a href="alerts.html" class="d-flex align-items-center justify-content-between gap-4 rounded-2 border border-brand bg-white p-4 hover-brand">
+              <span><b class="d-block small-text">Alertas</b><span id="alert-count" class="mt-1 d-block tiny-text text-subdued">Carregando alertas</span></span><span aria-hidden="true" class="fs-5 text-teal">→</span>
             </a>
-            <a href="reports.html" class="flex items-center justify-between gap-4 rounded-lg border border-[#d3e1db] bg-white p-4 hover:border-teal">
-              <span><b class="block text-sm">Relatórios</b><span class="mt-1 block text-xs text-[#78918b]">Consulte o resumo da captura atual.</span></span><span aria-hidden="true" class="text-lg text-teal">→</span>
+            <a href="reports.html" class="d-flex align-items-center justify-content-between gap-4 rounded-2 border border-brand bg-white p-4 hover-brand">
+              <span><b class="d-block small-text">Relatórios</b><span class="mt-1 d-block tiny-text text-subdued">Consulte o resumo da captura atual.</span></span><span aria-hidden="true" class="fs-5 text-teal">→</span>
             </a>
           </div>
         </section>
         <footer
-          class="mt-8 border-t border-[#dbe7e1] pt-5 text-[11px] text-[#78918b]"
+          class="mt-5 border-top border-brand-light pt-5 nano-text text-subdued"
         >
           PacketHub · Agente de captura v1.4.2 · Dados fictícios para
           demonstração
@@ -310,18 +292,18 @@
     </div>
     <dialog
       id="record-dialog"
-      class="w-[min(92vw,560px)] rounded-xl border border-[#d3e1db] p-0 shadow-2xl backdrop:bg-[#193235]/50"
+      class="dialog-width rounded-3 border border-brand p-0 shadow-2xl dialog-backdrop"
     >
       <form id="record-form" class="p-6">
-        <div class="mb-5 flex items-start justify-between gap-4">
+        <div class="mb-4 d-flex align-items-start justify-content-between gap-4">
           <div>
             <p
               id="dialog-kicker"
-              class="mb-1 text-xs font-bold uppercase tracking-[.16em] text-teal"
+              class="mb-1 tiny-text fw-bold text-uppercase tracking-wide-brand text-teal"
             >
               Registro
             </p>
-            <h2 id="dialog-title" class="font-display text-xl font-bold">
+            <h2 id="dialog-title" class="font-display fs-4 fw-bold">
               Novo registro
             </h2>
           </div>
@@ -329,24 +311,24 @@
             id="dialog-close"
             type="button"
             aria-label="Fechar"
-            class="grid h-9 w-9 place-items-center rounded-lg border border-[#d3e1db] text-lg"
+            class="btn btn-outline-brand btn-sm icon-button-size d-grid justify-content-center align-items-center"
           >
             ×
           </button>
         </div>
-        <div id="record-fields" class="grid gap-4 sm:grid-cols-2"></div>
-        <div class="mt-6 flex justify-end gap-2 border-t border-[#e5eee9] pt-4">
+        <div id="record-fields" class="d-grid gap-4 grid-cols-sm-2"></div>
+        <div class="mt-5 d-flex justify-content-end gap-2 border-top border-brand-line pt-4">
           <button
             id="dialog-cancel"
             type="button"
-            class="rounded-lg border border-[#d3e1db] px-4 py-2 text-sm font-semibold"
+            class="btn btn-outline-brand"
           >
             Cancelar
           </button>
           <button
             id="dialog-submit"
             type="submit"
-            class="rounded-lg bg-[#137f78] px-4 py-2 text-sm font-bold text-white"
+            class="btn btn-brand fw-bold"
           >
             Salvar
           </button>
