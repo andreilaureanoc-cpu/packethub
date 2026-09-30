@@ -1,4 +1,4 @@
-export const formatarNumero = new Intl.NumberFormat("en-US");
+export const formatarNumero = new Intl.NumberFormat("pt-BR");
 
 export function elemento(tag, classe = "", texto = "") {
   const novoElemento = document.createElement(tag);
