@@ -20,10 +20,6 @@ GET {{server}}/nodeRecords
 
 GET {{server}}/nodeRecords/1
 
-### Consultar os indicadores
-
-GET {{server}}/stats
-
 ### Consultar o estado da captura
 
 GET {{server}}/capture

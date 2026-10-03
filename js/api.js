@@ -34,10 +34,6 @@ export function listarNos() {
   return requisitar("/nodeRecords");
 }
 
-export function obterResumo() {
-  return requisitar("/stats");
-}
-
 export function obterCaptura() {
   return requisitar("/capture");
 }

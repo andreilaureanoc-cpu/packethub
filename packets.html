@@ -9,6 +9,7 @@
     />
     <title>PacketHub | Pacotes</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.datatables.net/2.3.2/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
     <link href="./styles.css" rel="stylesheet" />
   </head>
   <body class="page-bg text-ink packets-page">
@@ -53,43 +54,21 @@
           role="alert"
         ></div>
         <section aria-labelledby="packets-title" class="mb-4">
-          <div class="mb-3 d-flex flex-column gap-4">
-            <div class="d-flex align-items-end justify-content-between gap-4">
-              <div>
-                <p class="mb-1 tiny-text fw-bold text-uppercase tracking-wider-brand text-teal">Registros</p>
-                <h2 id="packets-title" class="font-display fs-4 fw-bold">Todos os pacotes</h2>
-              </div>
-              <p id="packet-count" class="tiny-text text-subdued" aria-live="polite"></p>
+          <div class="mb-3 d-flex flex-wrap align-items-end justify-content-between gap-3">
+            <div>
+              <p class="mb-1 tiny-text fw-bold text-uppercase tracking-wider-brand text-teal">Registros</p>
+              <h2 id="packets-title" class="font-display fs-4 fw-bold">Todos os pacotes</h2>
             </div>
-            <div class="d-grid gap-3 grid-cols-sm-packet-filters">
-              <label class="position-relative packet-search-field">
-                <span class="visually-hidden">Buscar pacotes</span>
-                <span class="position-absolute position-search-icon text-subdued">⌕</span>
-                <input
-                  type="search"
-                  id="packet-search"
-                  placeholder="Buscar ID, IP, protocolo ou informação"
-                  class="form-control form-control-sm ps-5"
-                />
-              </label>
-              <label>
+            <div class="d-flex w-100 w-sm-auto flex-wrap align-items-end gap-2">
+              <label class="flex-grow-1">
                 <span class="visually-hidden">Filtrar por protocolo</span>
                 <select id="protocol-filter" class="form-select form-select-sm">
                   <option value="">Todos os protocolos</option>
-                  <option value="TCP">TCP</option>
-                  <option value="UDP">UDP</option>
-                  <option value="DNS">DNS</option>
-                  <option value="HTTP">HTTP</option>
                 </select>
               </label>
-              <label>
-                <span class="visually-hidden">Quantidade de pacotes</span>
-                <select id="packet-limit" class="form-select form-select-sm">
-                  <option value="5">Últimos 5</option>
-                  <option value="50">Últimos 50</option>
-                  <option value="all">Todos</option>
-                </select>
-              </label>
+              <button id="export-packets" type="button" class="btn btn-brand btn-sm" disabled>
+                Exportar CSV
+              </button>
             </div>
           </div>
           <div class="overflow-auto rounded-3 border border-brand bg-white">
@@ -131,6 +110,9 @@
         </div>
       </form>
     </dialog>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/2.3.2/js/dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/2.3.2/js/dataTables.bootstrap5.min.js"></script>
     <script type="module" src="./app.js"></script>
   </body>
 </html>

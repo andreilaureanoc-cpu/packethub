@@ -5,9 +5,9 @@ import {
   listarNos,
   listarPacotes,
   obterCaptura,
-  obterResumo,
   salvarRegistro as persistirRegistro,
 } from "./js/api.js";
+import { calcularResumoPacotes } from "./js/estatisticas.js";
 import { limparErro, mostrarErro } from "./js/dom.js";
 import { lerDadosFormulario, abrirFormulario } from "./js/formularios.js";
 import {
@@ -16,13 +16,18 @@ import {
   mostrarCaptura,
   mostrarNos,
   mostrarPacotes,
+  mostrarResumoNos,
   mostrarResumo,
+  exportarPacotesCSV,
+  filtrarPacotesPorProtocolo,
 } from "./js/interface.js";
 
 let pacotes = [];
 let nos = [];
 let captura = {};
 let resumoCaptura = {};
+const protocoloInicial = new URLSearchParams(window.location.search).get("protocol") || "";
+let protocoloInicialAplicado = false;
 let recursoEditado = "";
 let idEditado = null;
 
@@ -36,19 +41,27 @@ const acoesRegistro = {
 };
 
 async function carregarPacotes() {
-  const protocolo = document.querySelector("#protocol-filter")?.value || "";
-  pacotes = await listarPacotes(protocolo);
+  pacotes = await listarPacotes();
   mostrarPacotes(pacotes, acoesRegistro);
+  const filtro = document.querySelector("#protocol-filter");
+  if (!protocoloInicialAplicado && filtro) {
+    if ([...filtro.options].some((opcao) => opcao.value === protocoloInicial)) {
+      filtro.value = protocoloInicial;
+      filtrarPacotesPorProtocolo(protocoloInicial);
+    }
+    protocoloInicialAplicado = true;
+  }
 }
 
 async function carregarNos() {
   nos = await listarNos();
   mostrarNos(nos, acoesRegistro);
   mostrarAlertas(nos);
+  mostrarResumoNos(nos);
 }
 
 async function carregarResumo() {
-  resumoCaptura = await obterResumo();
+  resumoCaptura = calcularResumoPacotes(await listarPacotes());
   mostrarResumo(resumoCaptura);
 }
 
@@ -74,6 +87,8 @@ async function carregarPagina() {
     }
     if (
       document.querySelector("#stat-captured") ||
+      document.querySelector("#protocols") ||
+      document.querySelector("#protocol-cards") ||
       document.querySelector("[data-protocol]") ||
       document.querySelector("[data-report]")
     ) {
@@ -138,15 +153,16 @@ document.querySelector("#add-node")?.addEventListener("click", () => {
   idEditado = null;
   abrirFormulario("nodes");
 });
-document
-  .querySelector("#packet-search")
-  ?.addEventListener("input", () => mostrarPacotes(pacotes, acoesRegistro));
-document
-  .querySelector("#packet-limit")
-  ?.addEventListener("change", () => mostrarPacotes(pacotes, acoesRegistro));
-document.querySelector("#protocol-filter")?.addEventListener("change", () =>
-  carregarPacotes().catch(mostrarErro),
+document.querySelector("#protocol-filter")?.addEventListener("change", (evento) =>
+  filtrarPacotesPorProtocolo(evento.currentTarget.value),
 );
+document.querySelector("#export-packets")?.addEventListener("click", () => {
+  try {
+    exportarPacotesCSV();
+  } catch (erro) {
+    mostrarErro(erro);
+  }
+});
 document.querySelector("#dialog-close")?.addEventListener("click", () =>
   document.querySelector("#record-dialog").close(),
 );
@@ -162,13 +178,5 @@ document.querySelectorAll("[data-capture-filter]").forEach((filtro) => {
     atualizarCaptura({ filter: evento.currentTarget.value }),
   );
 });
-
-const filtroInicial = document.querySelector("#protocol-filter");
-if (filtroInicial) {
-  const protocoloInicial = new URLSearchParams(window.location.search).get("protocol");
-  if ([...filtroInicial.options].some((opcao) => opcao.value === protocoloInicial)) {
-    filtroInicial.value = protocoloInicial;
-  }
-}
 
 carregarPagina();

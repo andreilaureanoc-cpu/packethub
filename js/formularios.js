@@ -50,7 +50,8 @@ export function abrirFormulario(recurso, registro = null) {
         : "form-control mt-1";
 
     if (tipo === "select") {
-      for (const opcao of opcoes) {
+      const valores = [...new Set([...(opcoes || []), registro?.[nome]].filter(Boolean))];
+      for (const opcao of valores) {
         const item = elemento("option", "", opcao);
         item.value = opcao;
         entrada.appendChild(item);

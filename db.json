@@ -44,6 +44,141 @@
       "protocol": "HTTP",
       "info": "GET /health HTTP/1.1",
       "size": "489 B"
+    },
+    {
+      "id": "18487",
+      "time": "14:32:08.364",
+      "src": "10.0.3.17",
+      "dst": "10.0.12.04",
+      "protocol": "ICMP",
+      "info": "Echo reply id=0x18a2 seq=41 ttl=64",
+      "size": "74 B"
+    },
+    {
+      "id": "18486",
+      "time": "14:32:08.351",
+      "src": "10.0.8.21:52144",
+      "dst": "10.0.12.04:443",
+      "protocol": "TCP",
+      "info": "[ACK] Seq=1281 Win=64240",
+      "size": "54 B"
+    },
+    {
+      "id": "18485",
+      "time": "14:32:08.330",
+      "src": "10.0.4.12:53",
+      "dst": "10.0.12.04:53022",
+      "protocol": "DNS",
+      "info": "Standard query AAAA api.prod",
+      "size": "94 B"
+    },
+    {
+      "id": "18484",
+      "time": "14:32:08.298",
+      "src": "10.0.12.04:53022",
+      "dst": "10.0.4.12:53",
+      "protocol": "DNS",
+      "info": "Standard query response A api.prod",
+      "size": "126 B"
+    },
+    {
+      "id": "18483",
+      "time": "14:32:08.274",
+      "src": "10.0.12.04:49201",
+      "dst": "10.0.22.16:80",
+      "protocol": "HTTP",
+      "info": "POST /api/auth HTTP/1.1",
+      "size": "716 B"
+    },
+    {
+      "id": "18482",
+      "time": "14:32:08.241",
+      "src": "10.0.8.21:52144",
+      "dst": "10.0.12.04:443",
+      "protocol": "TCP",
+      "info": "[PSH, ACK] Len=1024",
+      "size": "1,090 B"
+    },
+    {
+      "id": "18481",
+      "time": "14:32:08.209",
+      "src": "10.0.12.04:60431",
+      "dst": "10.0.3.17:123",
+      "protocol": "UDP",
+      "info": "NTP client request",
+      "size": "76 B"
+    },
+    {
+      "id": "18480",
+      "time": "14:32:08.177",
+      "src": "10.0.22.16:443",
+      "dst": "10.0.12.04:49201",
+      "protocol": "TCP",
+      "info": "TLS Application Data Len=2048",
+      "size": "2,114 B"
+    },
+    {
+      "id": "18479",
+      "time": "14:32:08.140",
+      "src": "10.0.12.04:52144",
+      "dst": "10.0.8.21:5432",
+      "protocol": "TCP",
+      "info": "[SYN] Seq=0 Win=65535",
+      "size": "60 B"
+    },
+    {
+      "id": "18478",
+      "time": "14:32:08.112",
+      "src": "10.0.22.16:80",
+      "dst": "10.0.12.04:49201",
+      "protocol": "HTTP",
+      "info": "HTTP/1.1 200 OK",
+      "size": "844 B"
+    },
+    {
+      "id": "18477",
+      "time": "14:32:08.082",
+      "src": "10.0.18.30:5353",
+      "dst": "224.0.0.251:5353",
+      "protocol": "UDP",
+      "info": "mDNS query PTR _http._tcp.local",
+      "size": "128 B"
+    },
+    {
+      "id": "18476",
+      "time": "14:32:07.998",
+      "src": "00:50:56:aa:00:04",
+      "dst": "ff:ff:ff:ff:ff:ff",
+      "protocol": "ARP",
+      "info": "Who has 10.0.12.01? Tell 10.0.12.04",
+      "size": "42 B"
+    },
+    {
+      "id": "18475",
+      "time": "14:32:07.962",
+      "src": "10.0.12.04:443",
+      "dst": "10.0.18.30:52110",
+      "protocol": "TCP",
+      "info": "[PSH, ACK] Len=512",
+      "size": "578 B"
+    },
+    {
+      "id": "18474",
+      "time": "14:32:07.914",
+      "src": "10.0.14.09:67",
+      "dst": "10.0.12.04:68",
+      "protocol": "UDP",
+      "info": "DHCP ACK lease=3600s",
+      "size": "300 B"
+    },
+    {
+      "id": "18473",
+      "time": "14:32:07.870",
+      "src": "10.0.12.04:443",
+      "dst": "10.0.31.18:51802",
+      "protocol": "TCP",
+      "info": "[FIN, ACK] Seq=2049 Ack=1",
+      "size": "54 B"
     }
   ],
   "nodeRecords": [
@@ -100,40 +235,134 @@
       "latency": "184 ms",
       "load": "92%",
       "status": "Atenção"
+    },
+    {
+      "id": "7",
+      "host": "edge-sp02",
+      "ip": "10.0.12.05",
+      "service": "HTTP / DNS",
+      "latency": "14 ms",
+      "load": "42%",
+      "status": "Operacional"
+    },
+    {
+      "id": "8",
+      "host": "core-db03",
+      "ip": "10.0.8.22",
+      "service": "PostgreSQL / SSH",
+      "latency": "9 ms",
+      "load": "57%",
+      "status": "Operacional"
+    },
+    {
+      "id": "9",
+      "host": "web-prod04",
+      "ip": "10.0.18.31",
+      "service": "HTTP / HTTPS",
+      "latency": "11 ms",
+      "load": "48%",
+      "status": "Operacional"
+    },
+    {
+      "id": "10",
+      "host": "api-prod04",
+      "ip": "10.0.22.17",
+      "service": "HTTPS / SSH",
+      "latency": "72 ms",
+      "load": "86%",
+      "status": "Atenção"
+    },
+    {
+      "id": "11",
+      "host": "cache-sp05",
+      "ip": "10.0.14.10",
+      "service": "Redis / DNS",
+      "latency": "5 ms",
+      "load": "31%",
+      "status": "Operacional"
+    },
+    {
+      "id": "12",
+      "host": "auth-prod06",
+      "ip": "10.0.31.19",
+      "service": "OAuth / HTTPS",
+      "latency": "22 ms",
+      "load": "63%",
+      "status": "Operacional"
+    },
+    {
+      "id": "13",
+      "host": "dns-rec01",
+      "ip": "10.0.4.13",
+      "service": "DNS / DoT",
+      "latency": "4 ms",
+      "load": "28%",
+      "status": "Operacional"
+    },
+    {
+      "id": "14",
+      "host": "mq-prod01",
+      "ip": "10.0.19.12",
+      "service": "RabbitMQ / TLS",
+      "latency": "21 ms",
+      "load": "49%",
+      "status": "Operacional"
+    },
+    {
+      "id": "15",
+      "host": "worker-bh01",
+      "ip": "10.0.25.31",
+      "service": "gRPC / HTTPS",
+      "latency": "98 ms",
+      "load": "89%",
+      "status": "Atenção"
+    },
+    {
+      "id": "16",
+      "host": "storage-sp01",
+      "ip": "10.0.16.40",
+      "service": "NFS / SSH",
+      "latency": "18 ms",
+      "load": "66%",
+      "status": "Operacional"
+    },
+    {
+      "id": "17",
+      "host": "proxy-sp02",
+      "ip": "10.0.12.06",
+      "service": "HTTP / TLS",
+      "latency": "15 ms",
+      "load": "39%",
+      "status": "Operacional"
+    },
+    {
+      "id": "18",
+      "host": "vpn-gw01",
+      "ip": "10.0.2.1",
+      "service": "IPsec / VPN",
+      "latency": "33 ms",
+      "load": "54%",
+      "status": "Operacional"
+    },
+    {
+      "id": "19",
+      "host": "telemetry01",
+      "ip": "10.0.27.41",
+      "service": "Prometheus / HTTP",
+      "latency": "9 ms",
+      "load": "37%",
+      "status": "Operacional"
+    },
+    {
+      "id": "20",
+      "host": "backup-bh01",
+      "ip": "10.0.40.22",
+      "service": "SFTP / SSH",
+      "latency": "—",
+      "load": "0%",
+      "status": "Indisponível"
     }
   ],
-  "stats": {
-    "captured": 18492,
-    "rate": 246,
-    "dataMB": 842,
-    "droppedPct": "0.02%",
-    "protocols": [
-      {
-        "name": "TCP",
-        "total": 11542,
-        "percentage": "62.4%",
-        "label": "Conexões observadas"
-      },
-      {
-        "name": "UDP",
-        "total": 5194,
-        "percentage": "28.1%",
-        "label": "Datagramas observados"
-      },
-      {
-        "name": "DNS",
-        "total": 1441,
-        "percentage": "7.8%",
-        "label": "Consultas resolvidas"
-      },
-      {
-        "name": "HTTP",
-        "total": 315,
-        "percentage": "1.7%",
-        "label": "Requisições analisadas"
-      }
-    ]
-  },
   "capture": {
     "interface": "any",
     "command": "tcpdump -i any",

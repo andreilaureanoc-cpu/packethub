@@ -6,6 +6,7 @@
     <meta name="description" content="Hosts monitorados e estado dos serviços no PacketHub." />
     <title>PacketHub | Nós monitorados</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.datatables.net/2.3.2/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
     <link href="./styles.css" rel="stylesheet" />
   </head>
   <body class="page-bg text-ink">
@@ -43,6 +44,9 @@
       </main>
     </div>
     <dialog id="record-dialog" class="dialog-width rounded-3 border border-brand p-0 dialog-backdrop"><form id="record-form" class="p-4"><div class="mb-4 d-flex align-items-start justify-content-between gap-4"><div><p id="dialog-kicker" class="mb-1 tiny-text fw-bold text-uppercase tracking-wide-brand text-teal">Nó monitorado</p><h2 id="dialog-title" class="font-display fs-4 fw-bold">Novo registro</h2></div><button id="dialog-close" type="button" aria-label="Fechar" class="btn btn-outline-brand btn-sm icon-button-size d-grid justify-content-center align-items-center">×</button></div><div id="record-fields" class="d-grid gap-4 grid-cols-sm-2"></div><div class="mt-5 d-flex justify-content-end gap-2 border-top border-brand-line pt-4"><button id="dialog-cancel" type="button" class="btn btn-outline-brand">Cancelar</button><button id="dialog-submit" type="submit" class="btn btn-brand fw-bold">Salvar</button></div></form></dialog>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/2.3.2/js/dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/2.3.2/js/dataTables.bootstrap5.min.js"></script>
     <script type="module" src="./app.js"></script>
   </body>
 </html>
