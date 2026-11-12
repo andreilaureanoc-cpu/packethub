@@ -34,16 +34,34 @@
 - [Alertas](alerts.html)
 - [Relatórios](reports.html)
 
+## Executar localmente
+
+Requer Node.js 22.5 ou superior. Instale as dependências com `npm install` e inicie a aplicação com `npm start`. O comando compila o TypeScript e inicia o servidor web e a API REST na porta 8080.
+
+Os dados são persistidos em SQLite no arquivo `data/packethub.sqlite`. Na primeira inicialização, o banco é criado e preenchido com os dados de demonstração de [seed.sql](src/server/seed.sql). Para usar outro caminho, defina `DATABASE_PATH`; para mudar a porta HTTP, defina `PORT`.
+
+Para desenvolvimento com recompilação de TypeScript e reinício automático do servidor, inicie a tarefa **Start PacketHub** no VS Code. No terminal, execute `npm run build:watch` e `npm run start:watch` em terminais separados. Durante uma captura ativa, o painel consulta o estado e atualiza os pacotes a cada dois segundos.
+
+## Organização do código TypeScript
+
+O código segue MVC. No cliente, `models/` acessa a API e calcula dados, `views/` renderiza a interface e `controllers/` coordena eventos e fluxo da aplicação. No servidor, `models/` consulta o SQLite, `controllers/` implementa os casos de uso HTTP e `routes/` encaminha as rotas; `infrastructure/` inicializa o banco.
+
+## Captura de tráfego e registro de visitas
+
+A captura real é opcional e fica desativada por padrão. Para habilitá-la, o servidor precisa ter `tcpdump` instalado e permissões de captura concedidas pelo administrador do host. Configure `TCPDUMP_ENABLED=true`, `TCPDUMP_INTERFACES` com uma lista explícita de interfaces autorizadas (por exemplo, `eth0`) e `CAPTURE_ADMIN_TOKEN` com um segredo aleatório de pelo menos 32 caracteres. O token é informado no painel e não é salvo no navegador nem no banco.
+
+O painel oferece filtros predefinidos (todo tráfego, TCP, UDP, ICMP e DNS); comandos livres não são aceitos. A captura guarda somente metadados resumidos, para no máximo 1.000 pacotes ou após cinco minutos e requer HTTPS para controles remotos. Em implantação atrás de um proxy HTTPS confiável, configure `TRUST_PROXY=true`.
+
+Cada carregamento de página HTML registra uma visita na tabela `access_logs` com endereço IP, User-Agent e página. Esses registros são removidos após um dia. Esse log não autentica nem identifica uma pessoa por si só.
+
 ## Funcionalidades Planejadas (Features)
 - [x] Visualização de métricas (CPU, Memória, Latência) e status de servidores no Dashboard com dados fictícios
 - [x] Layout responsivo para as telas do sistema (Dashboard, Nós, Alertas e Configurações)
 - [ ] Filtro e busca dinâmica por IP, host e status dos serviços de rede (HTTP, DNS, SSH, DHCP)
-- [x] Consumo de API simulada via `json-server` com dados dinâmicos de servidores e incidentes (Projeto 1.1)
+- [x] API REST local com persistência SQLite para pacotes, nós, captura e camadas
 - [ ] Autenticação e controle de acesso de operadores de rede (Login/Logout com JWT)
-- [ ] Servidor de API RESTful em Express.js para coleta e gerenciamento dos nós de rede (Projeto 1.2)
-- [ ] Persistência de registros de métricas, histórico de uptime e incidentes em Banco de Dados com Prisma ORM
 - [ ] Notificação automática de falhas de serviço e exportação de relatórios de tráfego/disponibilidade
 
 ## Estratégia para Obtenção de Dados Reais (Hipóteses Técnicas)
 - **Fontes de Dados & Coleta:** Execução do utilitário `tshark` (ou `tcpdump`) em segundo plano no servidor Linux capturando pacotes na interface de rede e exportando o tráfego diretamente em formato JSON estruturado (`tshark -T json -i any`).
-- **Armazenamento & API:** Construção de uma API REST em Express.js com integração de WebSockets/SSE em Node.js para transmitir os pacotes capturados pelo `tshark` em tempo real para o front-end, persistindo sessões de captura e estatísticas de tráfego em banco de dados com Prisma ORM.
+- **Armazenamento & API:** A API REST local já persiste os dados em SQLite. Como evolução, a captura com `tshark` poderá transmitir pacotes em tempo real via WebSockets/SSE e ampliar o histórico armazenado.

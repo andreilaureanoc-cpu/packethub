@@ -1,0 +1,39 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Compile PacketHub (watch)",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"build:watch"
+			],
+			"isBackground": true,
+			"problemMatcher": {
+				"base": "$tsc-watch",
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": "Starting compilation in watch mode",
+					"endsPattern": "Watching for file changes"
+				}
+			}
+		},
+		{
+			"label": "Start PacketHub",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"start:watch"
+			],
+			"dependsOn": [
+				"Compile PacketHub (watch)"
+			],
+			"dependsOrder": "sequence",
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}

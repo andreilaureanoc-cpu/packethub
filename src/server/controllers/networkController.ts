@@ -1,0 +1,118 @@
+import type { IncomingMessage, ServerResponse } from "node:http";
+import type { TLSSocket } from "node:tls";
+import {
+  obterEstadoCaptura,
+  obterOpcoesCaptura,
+  iniciarTcpdump,
+  pararTcpdump,
+  TcpdumpError,
+  validarFiltroCaptura,
+  validarInterfaceCaptura,
+  validarTokenCaptura,
+} from "../infrastructure/tcpdumpProcess.js";
+import { listarCamadas } from "../models/layerModel.js";
+import {
+  HttpError,
+  lerJson,
+  metodoNaoPermitido,
+  responderJson,
+  validarCampos,
+} from "./httpController.js";
+
+function requisicaoSegura(request: IncomingMessage): boolean {
+  const endereco = request.socket.remoteAddress || "";
+  const local =
+    endereco === "::1" ||
+    endereco === "127.0.0.1" ||
+    endereco.startsWith("127.") ||
+    endereco.startsWith("::ffff:127.");
+  const tlsDireto = Boolean((request.socket as TLSSocket).encrypted);
+  const tlsProxy =
+    process.env.TRUST_PROXY === "true" &&
+    request.headers["x-forwarded-proto"] === "https";
+  return local || tlsDireto || tlsProxy;
+}
+
+function autorizarControleCaptura(request: IncomingMessage): void {
+  if (!obterOpcoesCaptura().enabled) {
+    throw new HttpError(
+      503,
+      "Captura desativada. Configure tcpdump, interface autorizada e token no servidor.",
+    );
+  }
+  const autorizacao = request.headers.authorization || "";
+  const token = autorizacao.startsWith("Bearer ")
+    ? autorizacao.slice("Bearer ".length)
+    : "";
+  if (!validarTokenCaptura(token)) {
+    throw new HttpError(401, "Token de captura inválido.");
+  }
+  if (!requisicaoSegura(request)) {
+    throw new HttpError(
+      403,
+      "O controle remoto da captura exige HTTPS.",
+    );
+  }
+}
+
+export function controlarOpcoesCaptura(
+  request: IncomingMessage,
+  response: ServerResponse,
+): void {
+  if (request.method !== "GET") metodoNaoPermitido("GET");
+  responderJson(response, 200, obterOpcoesCaptura());
+}
+
+export function controlarEstadoCaptura(
+  request: IncomingMessage,
+  response: ServerResponse,
+): void {
+  if (request.method !== "GET") metodoNaoPermitido("GET");
+  responderJson(response, 200, obterEstadoCaptura());
+}
+
+export async function iniciarCaptura(
+  request: IncomingMessage,
+  response: ServerResponse,
+): Promise<void> {
+  if (request.method !== "POST") metodoNaoPermitido("POST");
+  autorizarControleCaptura(request);
+  const dados = validarCampos(
+    await lerJson(request),
+    ["interface", "filter"],
+    ["interface", "filter"],
+  );
+  const interfaceRede = dados.interface as string;
+  const filtro = dados.filter as string;
+  if (!validarInterfaceCaptura(interfaceRede)) {
+    throw new HttpError(400, "A interface não está autorizada para captura.");
+  }
+  if (!validarFiltroCaptura(filtro)) {
+    throw new HttpError(400, "Filtro de captura inválido.");
+  }
+  try {
+    responderJson(response, 200, await iniciarTcpdump(interfaceRede, filtro));
+  } catch (erro) {
+    if (erro instanceof TcpdumpError) {
+      throw new HttpError(503, erro.message);
+    }
+    throw erro;
+  }
+}
+
+export async function pararCaptura(
+  request: IncomingMessage,
+  response: ServerResponse,
+): Promise<void> {
+  if (request.method !== "POST") metodoNaoPermitido("POST");
+  autorizarControleCaptura(request);
+  responderJson(response, 200, await pararTcpdump());
+}
+
+export function controlarCamadas(
+  request: IncomingMessage,
+  response: ServerResponse,
+): void {
+  if (request.method !== "GET") metodoNaoPermitido("GET");
+  responderJson(response, 200, listarCamadas());
+}

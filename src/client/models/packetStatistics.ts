@@ -1,6 +1,7 @@
-import { formatarNumero } from "./dom.js";
+import { formatarNumero } from "../views/dom.js";
+import type { PacketRecord, PacketSummary, ProtocolSummary } from "./types.js";
 
-const unidadesBytes = {
+const unidadesBytes: Record<string, number> = {
   B: 1,
   KB: 1000,
   KIB: 1024,
@@ -10,7 +11,7 @@ const unidadesBytes = {
   GIB: 1024 ** 3,
 };
 
-const rotulosProtocolos = {
+const rotulosProtocolos: Record<string, string> = {
   TCP: "Conexões observadas",
   UDP: "Datagramas observados",
   DNS: "Consultas resolvidas",
@@ -25,7 +26,7 @@ const formatarPercentual = new Intl.NumberFormat("pt-BR", {
   maximumFractionDigits: 1,
 });
 
-function converterTamanhoParaBytes(tamanho) {
+function converterTamanhoParaBytes(tamanho: unknown): number | null {
   const correspondencia = String(tamanho ?? "")
     .trim()
     .replace(/,/g, "")
@@ -37,7 +38,7 @@ function converterTamanhoParaBytes(tamanho) {
   return valor * unidadesBytes[unidade];
 }
 
-function formatarTamanho(bytes) {
+function formatarTamanho(bytes: number): string {
   const unidades = ["B", "KB", "MB", "GB"];
   let indice = 0;
   let valor = bytes;
@@ -50,7 +51,7 @@ function formatarTamanho(bytes) {
   return `${formatarDecimal.format(valor)} ${unidades[indice]}`;
 }
 
-function converterHorarioParaMilissegundos(horario) {
+function converterHorarioParaMilissegundos(horario: unknown): number | null {
   const correspondencia = String(horario ?? "").match(
     /^(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?$/,
   );
@@ -66,14 +67,14 @@ function converterHorarioParaMilissegundos(horario) {
   );
 }
 
-function calcularTaxa(pacotes) {
+function calcularTaxa(pacotes: PacketRecord[]): number {
   const horarios = pacotes
     .map((pacote) => converterHorarioParaMilissegundos(pacote.time))
     .filter((horario) => horario !== null)
     .sort((primeiro, segundo) => primeiro - segundo);
   if (horarios.length < 2) return 0;
 
-  let duracao = horarios.at(-1) - horarios[0];
+  let duracao = horarios[horarios.length - 1] - horarios[0];
   const meioDia = 12 * 60 * 60 * 1000;
   const dia = 24 * 60 * 60 * 1000;
   if (duracao > meioDia) duracao = dia - duracao;
@@ -82,7 +83,7 @@ function calcularTaxa(pacotes) {
   return Math.round((horarios.length - 1) / (duracao / 1000));
 }
 
-export function calcularResumoPacotes(pacotes) {
+export function calcularResumoPacotes(pacotes: PacketRecord[]): PacketSummary {
   const totaisPorProtocolo = new Map();
   for (const pacote of pacotes) {
     const protocolo = String(pacote.protocol ?? "Não identificado");
@@ -92,7 +93,7 @@ export function calcularResumoPacotes(pacotes) {
     );
   }
 
-  const protocolos = Array.from(totaisPorProtocolo, ([name, total]) => ({
+  const protocolos: ProtocolSummary[] = Array.from(totaisPorProtocolo, ([name, total]) => ({
     name,
     total,
     percentage: formatarPercentual.format(total / pacotes.length),

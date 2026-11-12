@@ -156,13 +156,29 @@
               >
             </div>
           </div>
+          <div class="mb-3 d-grid gap-3 grid-cols-sm-3">
+            <label for="capture-interface-select" class="tiny-text fw-semibold text-muted-brand">
+              Interface autorizada
+              <select id="capture-interface-select" class="form-select mt-1" disabled></select>
+            </label>
+            <label for="capture-filter" class="tiny-text fw-semibold text-muted-brand">
+              Filtro
+              <select id="capture-filter" data-capture-filter class="form-select mt-1" disabled></select>
+            </label>
+            <label for="capture-admin-token" class="tiny-text fw-semibold text-muted-brand">
+              Token de administração
+              <input id="capture-admin-token" type="password" class="form-control mt-1" autocomplete="off" disabled />
+            </label>
+          </div>
+          <p id="capture-configuration" class="mb-4 tiny-text text-muted-brand" role="status" aria-live="polite"></p>
           <div class="mb-5 d-flex justify-content-end">
             <button
               id="capture-toggle"
               type="button"
               class="btn btn-danger-brand fw-bold"
+              disabled
             >
-              Parar captura
+              Iniciar captura
             </button>
           </div>
           <div class="d-grid gap-4 border-top border-brand-line pt-5 grid-cols-sm-4">
@@ -283,6 +299,6 @@
         </div>
       </form>
     </dialog>
-    <script type="module" src="./app.js"></script>
+    <script type="module" src="./dist/client/controllers/applicationController.js"></script>
   </body>
 </html>
