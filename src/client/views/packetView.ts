@@ -1,4 +1,5 @@
 import { elemento, formatarNumero } from "./dom.js";
+import { encontrarHostDoEndpoint } from "../models/hostTraffic.js";
 import { obterEstiloProtocolo } from "./protocolView.js";
 import type { NodeRecord, PacketRecord } from "../models/types.js";
 import type { RecordActions } from "./types.js";
@@ -108,13 +109,36 @@ export function filtrarPacotesPorProtocolo(protocolo: string) {
   instancia.column(4).search(expressao, true, false).draw();
 }
 
-export function mostrarPacotes(pacotes: PacketRecord[], acoes: RecordActions) {
+export function mostrarPacotes(
+  pacotes: PacketRecord[],
+  nos: NodeRecord[],
+  acoes: RecordActions,
+) {
   const tabela = document.querySelector<HTMLTableSectionElement>("#packets-body");
   const linhas = [];
   atualizarFiltroProtocolos(pacotes);
 
   for (const pacote of pacotes) {
     const linha = elemento("tr");
+    const origemCadastrada =
+      pacote.source === "capture"
+        ? encontrarHostDoEndpoint(pacote.src, nos)
+        : undefined;
+    const destinoCadastrado =
+      pacote.source === "capture"
+        ? encontrarHostDoEndpoint(pacote.dst, nos)
+        : undefined;
+    const hostsCadastrados = [
+      ...new Set(
+        [origemCadastrada?.host, destinoCadastrado?.host].filter(
+          (host): host is string => Boolean(host),
+        ),
+      ),
+    ];
+    if (hostsCadastrados.length > 0) {
+      linha.classList.add("bg-brand-blue-pale");
+      linha.title = `Comunicação com host cadastrado: ${hostsCadastrados.join(", ")}`;
+    }
     let idExibido = pacote.id;
     if (/^\d+$/.test(String(pacote.id))) {
       idExibido = formatarNumero.format(Number(pacote.id));
@@ -126,8 +150,26 @@ export function mostrarPacotes(pacotes: PacketRecord[], acoes: RecordActions) {
       "px-5 py-4 fw-bold text-subdued",
     );
     adicionarCelula(linha, pacote.time, "px-5 py-4 text-muted-brand");
-    adicionarCelula(linha, pacote.src, "px-5 py-4");
-    adicionarCelula(linha, pacote.dst, "px-5 py-4");
+    const celulaOrigem = adicionarCelula(linha, pacote.src, "px-5 py-4");
+    if (origemCadastrada) {
+      celulaOrigem.appendChild(
+        elemento(
+          "span",
+          "ms-2 badge rounded-1 px-2 py-1 tiny-text bg-brand-blue-pale text-blue-brand",
+          origemCadastrada.host,
+        ),
+      );
+    }
+    const celulaDestino = adicionarCelula(linha, pacote.dst, "px-5 py-4");
+    if (destinoCadastrado) {
+      celulaDestino.appendChild(
+        elemento(
+          "span",
+          "ms-2 badge rounded-1 px-2 py-1 tiny-text bg-brand-blue-pale text-blue-brand",
+          destinoCadastrado.host,
+        ),
+      );
+    }
 
     const etiqueta = elemento(
       "b",
@@ -143,6 +185,11 @@ export function mostrarPacotes(pacotes: PacketRecord[], acoes: RecordActions) {
       pacote,
       acoes,
     );
+    if (hostsCadastrados.length > 0) {
+      for (const celula of linha.cells) {
+        celula.classList.add("bg-brand-blue-pale");
+      }
+    }
     linhas.push(linha);
   }
 

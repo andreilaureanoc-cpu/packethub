@@ -50,9 +50,12 @@ import type {
   Resource,
 } from "../models/types.js";
 import type { RecordActions } from "../views/types.js";
+import { obterInstanciaTabela } from "../views/tableView.js";
 
 let pacotes: PacketRecord[] = [];
 let nos: NodeRecord[] = [];
+let pacotesCarregados = false;
+let nosCarregados = false;
 let captura: Capture = {
   interface: "",
   command: "",
@@ -78,8 +81,15 @@ const acoesRegistro: RecordActions = {
 };
 
 async function carregarPacotes() {
-  pacotes = await listarPacotes();
-  mostrarPacotes(pacotes, acoesRegistro);
+  const [novosPacotes, novosNos] = await Promise.all([
+    listarPacotes(),
+    nosCarregados ? Promise.resolve(nos) : listarNos(),
+  ]);
+  pacotes = novosPacotes;
+  nos = novosNos;
+  pacotesCarregados = true;
+  nosCarregados = true;
+  mostrarPacotes(pacotes, nos, acoesRegistro);
   const filtro = document.querySelector<HTMLSelectElement>("#protocol-filter");
   if (!protocoloInicialAplicado && filtro) {
     if ([...filtro.options].some((opcao) => opcao.value === protocoloInicial)) {
@@ -91,14 +101,22 @@ async function carregarPacotes() {
 }
 
 async function carregarNos() {
-  nos = await listarNos();
-  mostrarNos(nos, acoesRegistro);
+  const [novosNos, pacotesCapturados] = await Promise.all([
+    listarNos(),
+    listarPacotes(),
+  ]);
+  nos = novosNos;
+  pacotes = pacotesCapturados;
+  nosCarregados = true;
+  pacotesCarregados = true;
+  mostrarNos(nos, pacotes, acoesRegistro);
   mostrarAlertas(nos);
   mostrarResumoNos(nos);
 }
 
 async function carregarResumo() {
-  resumoCaptura = calcularResumoPacotes(await listarPacotes());
+  const pacotesResumo = pacotesCarregados ? pacotes : await listarPacotes();
+  resumoCaptura = calcularResumoPacotes(pacotesResumo);
   mostrarResumo(resumoCaptura);
 }
 
@@ -125,6 +143,10 @@ async function carregarPagina() {
       document.querySelector("[data-alert-count]")
     ) {
       await carregarNos();
+      if (document.querySelector("#nodes-body")) {
+        captura = await obterCaptura();
+        if (captura.active) monitorarCaptura();
+      }
     }
     if (
       document.querySelector("#stat-captured") ||
@@ -216,11 +238,14 @@ function monitorarCaptura() {
       captura = await obterCaptura();
       mostrarCaptura(captura);
       if (!captura.active) {
+        if (document.querySelector("#nodes-body")) await carregarNos();
+        else if (document.querySelector("#packets-body")) await carregarPacotes();
         window.clearInterval(temporizadorCaptura!);
         temporizadorCaptura = null;
         return;
       }
       if (document.querySelector("#packets-body")) await carregarPacotes();
+      if (document.querySelector("#nodes-body")) await carregarNos();
       if (
         document.querySelector("#stat-captured") ||
         document.querySelector("#protocols") ||
@@ -284,6 +309,79 @@ async function iniciarAplicacao(): Promise<void> {
   }
 }
 
+function filtrarTabelaPorBusca(idCampo: string, seletorTabela: string): void {
+  const campo = document.querySelector<HTMLInputElement>(idCampo);
+  const tabela = document.querySelector(seletorTabela)?.closest("table") as
+    | HTMLTableElement
+    | null;
+  if (!campo || !tabela) return;
+  campo.addEventListener("input", () => {
+    obterInstanciaTabela(tabela)?.search(campo.value).draw();
+  });
+}
+
+function filtrarNosPorStatus(): void {
+  const filtro = document.querySelector<HTMLSelectElement>(
+    "#node-status-filter",
+  );
+  const tabela = document.querySelector("#nodes-body")?.closest("table") as
+    | HTMLTableElement
+    | null;
+  if (!filtro || !tabela) return;
+  filtro.addEventListener("change", () => {
+    const expressao = filtro.value
+      ? `^\\s*●\\s*${filtro.value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$`
+      : "";
+    obterInstanciaTabela(tabela)?.column(5).search(expressao, true, false).draw();
+  });
+}
+
+function exportarRelatorioCSV(): void {
+  const linhas: string[][] = [["Métrica", "Valor"]];
+  document.querySelectorAll<HTMLElement>("[data-report]").forEach((elemento) => {
+    linhas.push([
+      elemento.parentElement?.querySelector("p")?.textContent?.trim() || "",
+      elemento.textContent?.trim() || "",
+    ]);
+  });
+  for (const id of [
+    "report-nodes-total",
+    "report-nodes-operational",
+    "report-nodes-attention",
+    "report-nodes-unavailable",
+  ]) {
+    const elemento = document.querySelector<HTMLElement>(`#${id}`);
+    if (elemento) {
+      linhas.push([
+        elemento.previousElementSibling?.textContent?.trim() || id,
+        elemento.textContent?.trim() || "",
+      ]);
+    }
+  }
+  const conteudo = linhas
+    .map((linha) =>
+      linha
+        .map((valor) => `"${String(valor).replace(/"/g, '""')}"`)
+        .join(","),
+    )
+    .join("\r\n");
+  const url = URL.createObjectURL(
+    new Blob(["\uFEFF", conteudo], { type: "text/csv;charset=utf-8" }),
+  );
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "relatorio-packethub.csv";
+  link.hidden = true;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+filtrarTabelaPorBusca("#packet-search", "#packets-body");
+filtrarTabelaPorBusca("#node-search", "#nodes-body");
+filtrarNosPorStatus();
+
 document.querySelector("#add-node")?.addEventListener("click", () => {
   recursoEditado = "nodes";
   idEditado = null;
@@ -300,6 +398,13 @@ document.querySelector<HTMLSelectElement>("#protocol-filter")?.addEventListener(
 document.querySelector("#export-packets")?.addEventListener("click", () => {
   try {
     exportarPacotesCSV();
+  } catch (erro) {
+    mostrarErro(erro);
+  }
+});
+document.querySelector("#export-report")?.addEventListener("click", () => {
+  try {
+    exportarRelatorioCSV();
   } catch (erro) {
     mostrarErro(erro);
   }

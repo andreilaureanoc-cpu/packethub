@@ -1,5 +1,6 @@
 import { elemento, formatarNumero } from "./dom.js";
-import type { NodeRecord } from "../models/types.js";
+import { resumirProtocolosDoHost } from "../models/hostTraffic.js";
+import type { NodeRecord, PacketRecord } from "../models/types.js";
 import type { RecordActions } from "./types.js";
 import {
   adicionarBotoesDeAcao,
@@ -7,7 +8,11 @@ import {
   atualizarTabela,
 } from "./tableView.js";
 
-export function mostrarNos(nos: NodeRecord[], acoes: RecordActions) {
+export function mostrarNos(
+  nos: NodeRecord[],
+  pacotes: PacketRecord[],
+  acoes: RecordActions,
+) {
   const tabela = document.querySelector<HTMLTableSectionElement>("#nodes-body");
   const contador = document.querySelector("#node-count");
   if (contador) {
@@ -33,6 +38,23 @@ export function mostrarNos(nos: NodeRecord[], acoes: RecordActions) {
       `● ${no.status}`,
       `px-3 py-3 fw-bold ${corStatus}`,
     );
+    const celulaProtocolos = adicionarCelula(linha, "", "px-3 py-3");
+    const protocolos = resumirProtocolosDoHost(no, pacotes);
+    if (protocolos.length === 0) {
+      celulaProtocolos.textContent = "Nenhum tráfego capturado";
+    } else {
+      const listaProtocolos = elemento("div", "d-flex flex-wrap gap-1");
+      for (const { protocol, count } of protocolos) {
+        listaProtocolos.appendChild(
+          elemento(
+            "span",
+            "badge rounded-1 px-2 py-1 tiny-text bg-brand-blue-pale text-blue-brand",
+            `${protocol} · ${formatarNumero.format(count)}`,
+          ),
+        );
+      }
+      celulaProtocolos.appendChild(listaProtocolos);
+    }
     adicionarBotoesDeAcao(
       adicionarCelula(linha, "", "px-3 py-3"),
       "nodes",

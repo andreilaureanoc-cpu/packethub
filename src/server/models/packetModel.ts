@@ -6,6 +6,43 @@ type PacketRow = Omit<Packet, "info" | "dropped"> & {
   dropped: number | null;
 };
 
+const limiteArmazenamentoPacotesBytes = 100_000_000;
+
+function obterTotalBytesPacotes(): number {
+  const linha = database
+    .prepare("SELECT total_bytes FROM packet_storage WHERE id = 1")
+    .get() as { total_bytes: number };
+  return linha.total_bytes;
+}
+
+function descartarPacotesMaisAntigos(): void {
+  let totalBytes = obterTotalBytesPacotes();
+  const obterMaisAntigo = database.prepare(
+    "SELECT id FROM packets ORDER BY rowid LIMIT 1",
+  );
+  const excluir = database.prepare("DELETE FROM packets WHERE id = ?");
+
+  while (totalBytes >= limiteArmazenamentoPacotesBytes) {
+    const pacote = obterMaisAntigo.get() as { id: string } | undefined;
+    if (!pacote) return;
+    excluir.run(pacote.id);
+    totalBytes = obterTotalBytesPacotes();
+  }
+}
+
+function executarComLimite<T>(operacao: () => T): T {
+  database.exec("BEGIN IMMEDIATE");
+  try {
+    const resultado = operacao();
+    descartarPacotesMaisAntigos();
+    database.exec("COMMIT");
+    return resultado;
+  } catch (erro) {
+    database.exec("ROLLBACK");
+    throw erro;
+  }
+}
+
 function mapearPacote(linha: PacketRow): Packet {
   const pacote: Packet = {
     id: linha.id,
@@ -41,29 +78,31 @@ export function criarPacote(
   dados: NewPacket,
   userId?: string,
 ): Packet {
-  const proximo = database
-    .prepare("SELECT COALESCE(MAX(CAST(id AS INTEGER)), 0) + 1 AS id FROM packets")
-    .get() as { id: number };
-  const pacote: Packet = { ...dados, id: String(proximo.id) };
-  database
-    .prepare(
-      `INSERT INTO packets
-       (id, time, src, dst, protocol, info_json, size, dropped, created_by_user_id, source)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    )
-    .run(
-      pacote.id,
-      pacote.time,
-      pacote.src,
-      pacote.dst,
-      pacote.protocol,
-      JSON.stringify(pacote.info),
-      pacote.size,
-      pacote.dropped === undefined ? null : Number(pacote.dropped),
-      userId ?? null,
-      pacote.source ?? (userId ? "manual" : "capture"),
-    );
-  return pacote;
+  return executarComLimite(() => {
+    const proximo = database
+      .prepare("SELECT COALESCE(MAX(CAST(id AS INTEGER)), 0) + 1 AS id FROM packets")
+      .get() as { id: number };
+    const pacote: Packet = { ...dados, id: String(proximo.id) };
+    database
+      .prepare(
+        `INSERT INTO packets
+         (id, time, src, dst, protocol, info_json, size, dropped, created_by_user_id, source)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      )
+      .run(
+        pacote.id,
+        pacote.time,
+        pacote.src,
+        pacote.dst,
+        pacote.protocol,
+        JSON.stringify(pacote.info),
+        pacote.size,
+        pacote.dropped === undefined ? null : Number(pacote.dropped),
+        userId ?? null,
+        pacote.source ?? (userId ? "manual" : "capture"),
+      );
+    return pacote;
+  });
 }
 
 export function limparPacotesDemonstrativos(): number {
@@ -76,28 +115,32 @@ export function atualizarPacote(
   id: string,
   alteracoes: Partial<NewPacket>,
 ): Packet | undefined {
-  const pacoteAtual = obterPacote(id);
-  if (!pacoteAtual) return undefined;
-  const pacote = { ...pacoteAtual, ...alteracoes };
-  database
-    .prepare(
-      `UPDATE packets
-       SET time = ?, src = ?, dst = ?, protocol = ?, info_json = ?, size = ?, dropped = ?
-       WHERE id = ?`,
-    )
-    .run(
-      pacote.time,
-      pacote.src,
-      pacote.dst,
-      pacote.protocol,
-      JSON.stringify(pacote.info),
-      pacote.size,
-      pacote.dropped === undefined ? null : Number(pacote.dropped),
-      id,
-    );
-  return pacote;
+  return executarComLimite(() => {
+    const pacoteAtual = obterPacote(id);
+    if (!pacoteAtual) return undefined;
+    const pacote = { ...pacoteAtual, ...alteracoes };
+    database
+      .prepare(
+        `UPDATE packets
+         SET time = ?, src = ?, dst = ?, protocol = ?, info_json = ?, size = ?, dropped = ?
+         WHERE id = ?`,
+      )
+      .run(
+        pacote.time,
+        pacote.src,
+        pacote.dst,
+        pacote.protocol,
+        JSON.stringify(pacote.info),
+        pacote.size,
+        pacote.dropped === undefined ? null : Number(pacote.dropped),
+        id,
+      );
+    return pacote;
+  });
 }
 
 export function excluirPacote(id: string): boolean {
   return database.prepare("DELETE FROM packets WHERE id = ?").run(id).changes > 0;
 }
+
+executarComLimite(() => undefined);

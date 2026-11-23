@@ -37,8 +37,15 @@
         </header>
         <div id="api-feedback" class="mb-4 d-none rounded-2 border border-brand-coral bg-brand-coral-pale px-4 py-3 small-text text-error-brand" role="alert"></div>
         <section aria-labelledby="nodes-title" class="rounded-3 border border-brand bg-white p-5">
-          <div class="mb-3 d-flex flex-wrap align-items-center justify-content-between gap-3"><div><p class="mb-1 tiny-text fw-bold text-uppercase tracking-wider-brand text-teal">Infraestrutura</p><h2 id="nodes-title" class="font-display fs-4 fw-bold">Hosts cadastrados</h2></div><span id="node-count" class="tiny-text text-subdued" aria-live="polite">Carregando hosts</span></div>
-          <div class="overflow-auto"><table class="table table-sm w-100 min-w-nodes text-start tiny-text"><thead class="border-bottom border-brand-soft micro-text text-uppercase tracking-tight-brand text-subdued"><tr><th class="px-3 py-3">Host</th><th class="px-3 py-3">IP</th><th class="px-3 py-3">Serviço</th><th class="px-3 py-3">Latência</th><th class="px-3 py-3">Carga</th><th class="px-3 py-3">Status</th><th class="px-3 py-3">Ações</th></tr></thead><tbody id="nodes-body" class="divide-y divide-brand"></tbody></table></div>
+          <div class="mb-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div><p class="mb-1 tiny-text fw-bold text-uppercase tracking-wider-brand text-teal">Infraestrutura</p><h2 id="nodes-title" class="font-display fs-4 fw-bold">Hosts cadastrados</h2></div>
+            <div class="d-flex w-100 w-sm-auto flex-wrap align-items-end gap-2">
+              <label class="flex-grow-1"><span class="visually-hidden">Buscar nó</span><input id="node-search" type="search" class="form-control form-control-sm" placeholder="Buscar host, IP ou serviço" /></label>
+              <label><span class="visually-hidden">Filtrar por status</span><select id="node-status-filter" class="form-select form-select-sm"><option value="">Todos os status</option><option>Operacional</option><option>Atenção</option><option>Indisponível</option></select></label>
+            </div>
+            <span id="node-count" class="tiny-text text-subdued" aria-live="polite">Carregando hosts</span>
+          </div>
+          <div class="overflow-auto"><table class="table table-sm w-100 min-w-nodes text-start tiny-text"><thead class="border-bottom border-brand-soft micro-text text-uppercase tracking-tight-brand text-subdued"><tr><th class="px-3 py-3">Host</th><th class="px-3 py-3">IP</th><th class="px-3 py-3">Serviço</th><th class="px-3 py-3">Latência</th><th class="px-3 py-3">Carga</th><th class="px-3 py-3">Status</th><th class="px-3 py-3">Protocolos observados</th><th class="px-3 py-3">Ações</th></tr></thead><tbody id="nodes-body" class="divide-y divide-brand"></tbody></table></div>
         </section>
         <footer class="mt-5 border-top border-brand-light pt-5 nano-text text-subdued">PacketHub · Agente de captura v1.4.2 · Dados fictícios para demonstração</footer>
       </main>

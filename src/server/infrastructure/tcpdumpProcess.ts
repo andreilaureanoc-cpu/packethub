@@ -15,7 +15,7 @@ const filtros = [
   { id: "all", label: "Todo o tráfego", expressao: "" },
   { id: "tcp", label: "TCP", expressao: "tcp" },
   { id: "udp", label: "UDP", expressao: "udp" },
-  { id: "icmp", label: "ICMP", expressao: "icmp" },
+  { id: "icmp", label: "ICMP", expressao: "icmp or icmp6" },
   { id: "dns", label: "DNS", expressao: "port 53" },
 ] as const;
 
@@ -267,33 +267,45 @@ export function converterLinhaTcpdump(linha: string): Omit<Packet, "id"> | null 
   if (!timestamp) return null;
 
   const dados = linha.slice(timestamp[0].length);
+  const fracao = (timestamp[2] || "").slice(0, 3).padEnd(3, "0");
+  const time = `${timestamp[1]}.${fracao}`;
+  const tamanho = dados.match(/\blength\s+(\d+)/i);
+  const size = `${Number(tamanho?.[1] || 0)} B`;
 
   if (/^ARP\b/i.test(dados)) {
     const quemPossui = dados.match(/\bwho-has\s+([^\s,]+)/i);
     const diz = dados.match(/\btell\s+([^\s,]+)/i);
     if (quemPossui && diz) {
-      const tamanho = dados.match(/\blength\s+(\d+)/i);
       return {
-        time: `${timestamp[1]}.${(timestamp[2] || "").slice(0, 3).padEnd(3, "0")}`,
+        time,
         src: diz[1],
         dst: quemPossui[1],
         protocol: "ARP",
         info: dados.includes("Request") ? "Who has request" : "ARP packet",
-        size: `${Number(tamanho?.[1] || 0)} B`,
+        size,
       };
     }
   }
 
   const separadorOrigem = dados.indexOf(" > ");
-  if (separadorOrigem < 0) return null;
-  const cabecalho = dados.slice(0, separadorOrigem).trim();
-  const separadorDestino = dados.indexOf(": ", separadorOrigem + 3);
-  if (separadorDestino < 0) return null;
-
-  const src = cabecalho.replace(/^(?:IP6?|ARP)\s+/, "");
-  const dst = dados.slice(separadorOrigem + 3, separadorDestino).trim();
-  const detalhes = dados.slice(separadorDestino + 2);
-  if (!src || !dst) return null;
+  const cabecalho = separadorOrigem < 0
+    ? ""
+    : dados.slice(0, separadorOrigem).trim();
+  const separadorDestino = separadorOrigem < 0
+    ? -1
+    : dados.indexOf(": ", separadorOrigem + 3);
+  const enderecoOrigem = cabecalho.replace(/^(?:IP6?|ARP)\s+/, "");
+  const destino = separadorOrigem < 0
+    ? ""
+    : dados.slice(
+        separadorOrigem + 3,
+        separadorDestino < 0 ? undefined : separadorDestino,
+      ).trim();
+  const src = enderecoOrigem || "-";
+  const dst = destino || "-";
+  const detalhes = separadorDestino < 0
+    ? dados
+    : dados.slice(separadorDestino + 2);
 
   const portaSrc = src.match(/\.([0-9]+)$/)?.[1];
   const portaDst = dst.match(/\.([0-9]+)$/)?.[1];
@@ -301,25 +313,33 @@ export function converterLinhaTcpdump(linha: string): Omit<Packet, "id"> | null 
     portaSrc === "53" ||
     portaDst === "53" ||
     /\b(?:A|AAAA|PTR|MX|TXT|NS|SRV)\?\b/i.test(detalhes);
+  const protocoloCabecalho =
+    cabecalho.match(/^[A-Za-z][\w.-]*/)?.[0] ||
+    dados.split(/[\s,]+/, 1)[0] ||
+    "UNKNOWN";
   const protocolo =
     ehDNS ? "DNS"
     : /\bFlags\s+\[/.test(detalhes) ? "TCP"
     : /\bUDP\b/i.test(detalhes) ? "UDP"
     : /\bICMP6?\b/i.test(detalhes) ? "ICMP"
     : /\bHTTP\b/i.test(detalhes) ? "HTTP"
-    : cabecalho.startsWith("IP6 ") ? "IPv6"
-    : "IP";
+    : /^IP6?\s/.test(cabecalho) ? (cabecalho.startsWith("IP6 ") ? "IPv6" : "IP")
+    : protocoloCabecalho;
+  const protocoloTransporte = detalhes.match(/^([A-Za-z][\w.-]*)/);
+  const protocoloExibido = (protocolo === "IP" || protocolo === "IPv6") &&
+      protocoloTransporte &&
+      !/^(?:length|id|tos|ttl|proto)$/i.test(protocoloTransporte[1])
+    ? protocoloTransporte[1]
+    : protocolo;
   const flags = detalhes.match(/Flags\s+(\[[^\]]+\])/);
-  const tamanho = detalhes.match(/\blength\s+(\d+)/i);
-  const fracao = (timestamp[2] || "").slice(0, 3).padEnd(3, "0");
 
   return {
-    time: `${timestamp[1]}.${fracao}`,
+    time,
     src,
     dst,
-    protocol: protocolo,
-    info: flags ? `TCP ${flags[1]}` : `${protocolo} packet`,
-    size: `${Number(tamanho?.[1] || 0)} B`,
+    protocol: protocoloExibido,
+    info: flags ? `TCP ${flags[1]}` : detalhes,
+    size,
   };
 }
 

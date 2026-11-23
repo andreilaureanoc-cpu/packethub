@@ -47,7 +47,7 @@ test("Express API registration, JWT protection, persistence, logout and errors",
     assert.equal(
       database.prepare("SELECT COUNT(*) AS count FROM schema_migrations").get()
         .count,
-      3,
+      4,
     );
     assert.ok(
       database

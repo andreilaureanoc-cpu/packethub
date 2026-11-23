@@ -9,6 +9,7 @@ export type PacketRecord = {
   info: string | Record<string, unknown>;
   size: string;
   dropped?: boolean;
+  source?: "demo" | "capture" | "manual";
 };
 
 export type NodeRecord = {

@@ -50,6 +50,8 @@ Para desenvolvimento com recompilação de TypeScript e reinício automático do
 
 Para captura pelo VS Code, instale `tcpdump` (por exemplo, `sudo apt install tcpdump`) e conceda ao processo as permissões de captura necessárias; depois pare a tarefa **Start PacketHub** e inicie **Start PacketHub (tcpdump)**. A tarefa solicitará a interface autorizada. Alternativamente, defina `TCPDUMP_ENABLED=true` e `TCPDUMP_INTERFACES` como uma lista explícita de interfaces autorizadas no `.env`. Os controles de captura exigem uma sessão autenticada no painel e HTTPS para acessos remotos. A captura fica desativada por padrão, não usa a interface genérica `any`, aceita somente filtros predefinidos, armazena metadados resumidos e para após 1.000 pacotes ou cinco minutos. O tcpdump captura tráfego; ele não o gera.
 
+No Codespaces, use `npm run start:codespaces` para instalar dependências ausentes, configurar o `.env`, escolher uma interface ativa e iniciar o servidor sem um arquivo `.sh`. Também é possível escolher a interface com `IFACE=eth0 npm run start:codespaces`. O comando não instala pacotes do sistema nem altera permissões privilegiadas: `tcpdump` precisa estar instalado e autorizado pelo administrador do ambiente. A captura guarda o resumo de cada linha de pacote emitida pelo tcpdump, inclusive protocolos desconhecidos; campos de endereço indisponíveis aparecem como `-`.
+
 ## Organização do código TypeScript
 
 O código segue MVC. No cliente, `models/` acessa a API e calcula dados, `views/` renderiza a interface e `controllers/` coordena eventos e fluxo da aplicação. No servidor Express, `routes/` encaminha as rotas, `middleware/` autentica JWTs, `controllers/` implementa os casos de uso e centraliza erros, `models/` consulta o SQLite e `infrastructure/` configura banco e autenticação.
@@ -58,17 +60,20 @@ O código segue MVC. No cliente, `models/` acessa a API e calcula dados, `views/
 
 A captura real é opcional e fica desativada por padrão. Para habilitá-la, o servidor precisa ter `tcpdump` instalado e permissões de captura concedidas pelo administrador do host. Configure `TCPDUMP_ENABLED=true` e `TCPDUMP_INTERFACES` com uma lista explícita de interfaces autorizadas (por exemplo, `eth0`). Os controles usam a autenticação normal do painel, sem um token adicional de administração; o controle remoto exige HTTPS.
 
-O painel oferece filtros predefinidos (todo tráfego, TCP, UDP, ICMP e DNS); comandos livres não são aceitos. A captura guarda somente metadados resumidos, para no máximo 1.000 pacotes ou após cinco minutos e requer HTTPS para controles remotos. Em implantação atrás de um proxy HTTPS confiável, configure `TRUST_PROXY=true`.
+O painel oferece filtros predefinidos (todo tráfego, TCP, UDP, ICMP e DNS); comandos livres não são aceitos. O filtro “todo tráfego” inclui pacotes de protocolos que não tenham decodificação específica no PacketHub, preservando o resumo apresentado pelo tcpdump. O armazenamento de todos os pacotes tem limite de 100 MB (100.000.000 bytes); ao atingir o limite, os registros mais antigos são removidos primeiro, inclusive manuais ou demonstrativos. Esse limite conta os bytes UTF-8 dos campos dos pacotes, não o tamanho total do arquivo SQLite. A captura também para após 1.000 pacotes ou cinco minutos e requer HTTPS para controles remotos. Em implantação atrás de um proxy HTTPS confiável, configure `TRUST_PROXY=true`.
+
+Na lista de pacotes, tráfego capturado com origem ou destino igual ao IP de um host cadastrado recebe destaque azul e o nome do host. Na lista de hosts, os protocolos observados na captura são exibidos com suas contagens, incluindo ICMP; sem tráfego capturado correspondente, a tela informa que ainda não há observações.
 
 Cada carregamento de página HTML registra uma visita na tabela `access_logs` com endereço IP, User-Agent e página. Esses registros são removidos após um dia. Esse log não autentica nem identifica uma pessoa por si só.
 
 ## Funcionalidades Planejadas (Features)
 - [x] Visualização de métricas (CPU, Memória, Latência) e status de servidores no Dashboard com dados fictícios
 - [x] Layout responsivo para as telas do sistema (Dashboard, Nós, Alertas e Configurações)
-- [ ] Filtro e busca dinâmica por IP, host e status dos serviços de rede (HTTP, DNS, SSH, DHCP)
+- [x] Filtro e busca dinâmica por IP, host, serviço e status dos nós
 - [x] API REST local com persistência SQLite para pacotes, nós, captura e camadas
 - [x] Autenticação e controle de acesso de operadores de rede (Cadastro/Login/Logout com JWT)
-- [ ] Notificação automática de falhas de serviço e exportação de relatórios de tráfego/disponibilidade
+- [x] Exportação de pacotes e relatórios em CSV
+- [ ] Histórico persistente e notificações externas de falhas de serviço
 
 ## Estratégia para Obtenção de Dados Reais (Hipóteses Técnicas)
 - **Fontes de Dados & Coleta:** Execução do utilitário `tshark` (ou `tcpdump`) em segundo plano no servidor Linux capturando pacotes na interface de rede e exportando o tráfego diretamente em formato JSON estruturado (`tshark -T json -i any`).

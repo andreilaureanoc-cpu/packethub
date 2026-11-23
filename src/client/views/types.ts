@@ -11,6 +11,7 @@ export type RecordActions = {
 
 export type DataTableApi = {
   clear(): DataTableApi;
+  search(expression: string): DataTableApi;
   rows: {
     add(rows: HTMLTableRowElement[]): DataTableApi;
     (options: { search: string; order: string }): {

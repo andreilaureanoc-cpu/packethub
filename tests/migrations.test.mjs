@@ -20,6 +20,13 @@ test("migrations preserve an existing SQLite database", () => {
        VALUES ('legacy-node', 'legacy', '127.0.0.1', 'HTTP', '1 ms', '0%', 'Operacional')`,
     )
     .run();
+  legacyDatabase
+    .prepare(
+      `INSERT INTO packets (id, time, src, dst, protocol, info_json, size)
+       VALUES ('legacy-packet', '12:00:00.000', '192.0.2.1', '192.0.2.2',
+         'TCP', '"legacy packet"', '64 B')`,
+    )
+    .run();
   legacyDatabase.close();
 
   const script = `
@@ -28,9 +35,10 @@ test("migrations preserve an existing SQLite database", () => {
     const node = database.prepare("SELECT host, created_by_user_id FROM nodes WHERE id = ?").get("legacy-node");
     assert.equal(node.host, "legacy");
     assert.equal(node.created_by_user_id, null);
-    assert.equal(database.prepare("SELECT COUNT(*) AS count FROM schema_migrations").get().count, 3);
+    assert.equal(database.prepare("SELECT COUNT(*) AS count FROM schema_migrations").get().count, 4);
     assert.ok(database.prepare("PRAGMA table_info(packets)").all().some((column) => column.name === "source"));
-    assert.equal(database.prepare("SELECT source FROM packets LIMIT 1").get()?.source, undefined);
+    assert.equal(database.prepare("SELECT source FROM packets WHERE id = ?").get("legacy-packet").source, "demo");
+    assert.ok(database.prepare("SELECT total_bytes FROM packet_storage WHERE id = 1").get().total_bytes > 0);
     database.close();
   `;
   try {
