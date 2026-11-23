@@ -36,15 +36,19 @@ export function obterPacote(id: string): Packet | undefined {
   return linha ? mapearPacote(linha) : undefined;
 }
 
-export function criarPacote(dados: NewPacket): Packet {
+export function criarPacote(
+  dados: NewPacket,
+  userId?: string,
+): Packet {
   const proximo = database
     .prepare("SELECT COALESCE(MAX(CAST(id AS INTEGER)), 0) + 1 AS id FROM packets")
     .get() as { id: number };
   const pacote: Packet = { ...dados, id: String(proximo.id) };
   database
     .prepare(
-      `INSERT INTO packets (id, time, src, dst, protocol, info_json, size, dropped)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO packets
+       (id, time, src, dst, protocol, info_json, size, dropped, created_by_user_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .run(
       pacote.id,
@@ -55,6 +59,7 @@ export function criarPacote(dados: NewPacket): Packet {
       JSON.stringify(pacote.info),
       pacote.size,
       pacote.dropped === undefined ? null : Number(pacote.dropped),
+      userId ?? null,
     );
   return pacote;
 }

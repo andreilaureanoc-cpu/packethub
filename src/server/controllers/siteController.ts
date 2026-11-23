@@ -1,8 +1,8 @@
-import type { IncomingMessage } from "node:http";
+import type { Request } from "express";
 import { registrarAcesso } from "../models/accessLogModel.js";
 
 export function registrarVisita(
-  request: IncomingMessage,
+  request: Request,
   page: string,
 ): void {
   registrarAcesso(

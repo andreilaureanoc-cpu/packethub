@@ -1,4 +1,4 @@
-import type { IncomingMessage, ServerResponse } from "node:http";
+import type { ErrorRequestHandler, Request, Response } from "express";
 
 export class HttpError extends Error {
   constructor(
@@ -11,34 +11,15 @@ export class HttpError extends Error {
 }
 
 export function responderJson(
-  response: ServerResponse,
+  response: Response,
   status: number,
   dados: unknown,
 ): void {
-  const corpo = JSON.stringify(dados);
-  response.writeHead(status, {
-    "Content-Length": Buffer.byteLength(corpo),
-    "Content-Type": "application/json; charset=utf-8",
-  });
-  response.end(corpo);
+  response.status(status).json(dados);
 }
 
-export async function lerJson(request: IncomingMessage): Promise<unknown> {
-  const partes: Buffer[] = [];
-  let tamanho = 0;
-  for await (const parte of request) {
-    const buffer = Buffer.isBuffer(parte) ? parte : Buffer.from(parte);
-    tamanho += buffer.length;
-    if (tamanho > 1024 * 1024) {
-      throw new HttpError(413, "O corpo da requisição excede 1 MB.");
-    }
-    partes.push(buffer);
-  }
-  try {
-    return JSON.parse(Buffer.concat(partes).toString("utf8"));
-  } catch {
-    throw new HttpError(400, "O corpo da requisição deve ser um JSON válido.");
-  }
+export async function lerJson(request: Request): Promise<unknown> {
+  return request.body;
 }
 
 export function validarObjeto(valor: unknown): Record<string, unknown> {
@@ -81,12 +62,36 @@ export function validarCampos(
 }
 
 export function responderErroApi(
-  response: ServerResponse,
   erro: unknown,
+  request: Request,
+  response: Response,
+  next: Parameters<ErrorRequestHandler>[3],
 ): void {
+  if (response.headersSent) {
+    next(erro);
+    return;
+  }
   if (erro instanceof HttpError) {
-    if (erro.allow) response.setHeader("Allow", erro.allow);
-    responderJson(response, erro.status, { error: erro.message });
+    if (request.originalUrl.startsWith("/api")) {
+      if (erro.allow) response.set("Allow", erro.allow);
+      responderJson(response, erro.status, { error: erro.message });
+    } else {
+      response.status(erro.status).type("text/plain").send(erro.message);
+    }
+    return;
+  }
+  if (!request.originalUrl.startsWith("/api")) {
+    response.status(500).type("text/plain").send("Internal server error");
+    return;
+  }
+  const erroParser = erro as { status?: unknown; type?: unknown };
+  if (erroParser.status === 400 || erroParser.status === 413) {
+    responderJson(response, erroParser.status, {
+      error:
+        erroParser.status === 413
+          ? "O corpo da requisição excede 1 MB."
+          : "O corpo da requisição deve ser um JSON válido.",
+    });
     return;
   }
   console.error("Erro ao processar a API:", erro);

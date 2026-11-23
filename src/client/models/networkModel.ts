@@ -22,7 +22,7 @@ export function iniciarCaptura(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
+      "X-Capture-Token": token,
     },
     body: JSON.stringify({ interface: interfaceRede, filter: filtro }),
   });
@@ -31,7 +31,7 @@ export function iniciarCaptura(
 export function pararCaptura(token: string): Promise<Capture> {
   return apiRequest("/capture/stop", {
     method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
+    headers: { "X-Capture-Token": token },
   });
 }
 

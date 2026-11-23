@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Acesse o painel PacketHub." />
+    <title>PacketHub | Acesso</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="./styles.css" rel="stylesheet" />
+  </head>
+  <body class="page-bg text-ink">
+    <main class="container min-vh-100 d-flex align-items-center justify-content-center py-5">
+      <section class="w-100 rounded-3 border border-brand bg-white p-5" style="max-width: 28rem" aria-labelledby="auth-title">
+        <a href="index.html" class="mb-4 d-inline-flex align-items-center gap-3 text-decoration-none text-ink" aria-label="PacketHub">
+          <img src="images/logo-camadas.svg" alt="" class="logo-size" />
+          <span class="font-display fs-4 fw-bold">Packet<span class="text-teal">Hub</span></span>
+        </a>
+        <h1 id="auth-title" class="font-display fs-3 fw-bold">Acesse o PacketHub</h1>
+        <p class="mb-4 small-text text-muted-brand">Entre ou crie uma conta para continuar.</p>
+        <div id="api-feedback" class="mb-3 d-none rounded-2 border border-brand-coral bg-brand-coral-pale px-3 py-2 small-text text-error-brand" role="alert"></div>
+        <form id="auth-form">
+          <label for="auth-email" class="form-label">E-mail</label>
+          <input id="auth-email" name="email" type="email" class="form-control mb-3" autocomplete="email" maxlength="254" required />
+          <label for="auth-password" class="form-label">Senha</label>
+          <input id="auth-password" name="password" type="password" class="form-control mb-4" autocomplete="current-password" minlength="8" maxlength="128" required />
+          <button id="auth-submit" type="submit" class="btn btn-primary w-100">Entrar</button>
+        </form>
+        <button id="auth-toggle" type="button" class="btn btn-link mt-3 w-100">Criar uma conta</button>
+      </section>
+    </main>
+    <script type="module" src="./dist/client/controllers/authController.js"></script>
+  </body>
+</html>

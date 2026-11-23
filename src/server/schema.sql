@@ -1,3 +1,21 @@
+CREATE TABLE IF NOT EXISTS schema_migrations (
+  version INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  applied_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS users (
+  id TEXT PRIMARY KEY,
+  email TEXT NOT NULL COLLATE NOCASE UNIQUE,
+  password_hash TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS revoked_tokens (
+  token_id TEXT PRIMARY KEY,
+  expires_at INTEGER NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS packets (
   id TEXT PRIMARY KEY,
   time TEXT NOT NULL,
@@ -6,7 +24,8 @@ CREATE TABLE IF NOT EXISTS packets (
   protocol TEXT NOT NULL,
   info_json TEXT NOT NULL,
   size TEXT NOT NULL,
-  dropped INTEGER CHECK (dropped IN (0, 1))
+  dropped INTEGER CHECK (dropped IN (0, 1)),
+  created_by_user_id TEXT REFERENCES users(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS nodes (
@@ -16,7 +35,8 @@ CREATE TABLE IF NOT EXISTS nodes (
   service TEXT NOT NULL,
   latency TEXT NOT NULL,
   load TEXT NOT NULL,
-  status TEXT NOT NULL
+  status TEXT NOT NULL,
+  created_by_user_id TEXT REFERENCES users(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS capture (
@@ -34,6 +54,10 @@ CREATE TABLE IF NOT EXISTS layers (
 );
 
 CREATE INDEX IF NOT EXISTS packets_protocol_idx ON packets(protocol);
+CREATE INDEX IF NOT EXISTS packets_created_by_user_idx
+  ON packets(created_by_user_id);
+CREATE INDEX IF NOT EXISTS nodes_created_by_user_idx
+  ON nodes(created_by_user_id);
 
 CREATE TABLE IF NOT EXISTS access_logs (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

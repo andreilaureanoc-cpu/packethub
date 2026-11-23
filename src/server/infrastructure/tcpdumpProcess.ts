@@ -118,59 +118,84 @@ export async function iniciarTcpdump(
     stdio: ["ignore", "pipe", "pipe"],
   });
 
-  let inicializado = false;
-  const pronto = new Promise<void>((resolve, reject) => {
-    processo.once("spawn", () => {
-      inicializado = true;
-      resolve();
-    });
-    processo.once("error", (erro) => {
-      if (!inicializado) {
-        reject(
-          new TcpdumpError(
-            `Não foi possível iniciar tcpdump: ${erro.message}`,
-          ),
-        );
-      }
-    });
-  });
-
-  await pronto;
   processoCaptura = processo;
   inicioCaptura = Date.now();
   totalPacotesCapturados = 0;
-  let encerrouDuranteInicializacao = false;
   lerSaidaTcpdump(processo);
-  processo.stderr.on("data", (parte: Buffer) => {
-    const mensagem = parte.toString("utf8").trim();
-    if (mensagem) console.error("tcpdump:", mensagem);
+  let inicializado = false;
+  let mensagemErro = "";
+  const pronto = new Promise<void>((resolve, reject) => {
+    const temporizadorInicializacao = setTimeout(() => {
+      reject(new TcpdumpError("tcpdump não confirmou o início da captura."));
+    }, 5000);
+    const confirmar = () => {
+      if (inicializado) return;
+      inicializado = true;
+      clearTimeout(temporizadorInicializacao);
+      resolve();
+    };
+    const falhar = (mensagem: string) => {
+      if (inicializado) return;
+      clearTimeout(temporizadorInicializacao);
+      reject(new TcpdumpError(mensagem));
+    };
+    processo.once("spawn", () => {
+      processo.stderr.on("data", (parte: Buffer) => {
+        const mensagem = parte.toString("utf8").trim();
+        if (!mensagem) return;
+        console.error("tcpdump:", mensagem);
+        mensagemErro = `${mensagemErro}\n${mensagem}`.slice(-2000);
+        if (/\blistening on\b/i.test(mensagemErro)) {
+          confirmar();
+        } else if (
+          /permission denied|don't have permission|no such device|device not found/i.test(
+            mensagemErro,
+          )
+        ) {
+          falhar(`Não foi possível capturar nesta interface: ${mensagem}`);
+        }
+      });
+    });
+    processo.once("error", (erro) => {
+      if (inicializado) {
+        console.error("Falha no processo tcpdump:", erro);
+      } else {
+        falhar(`Não foi possível iniciar tcpdump: ${erro.message}`);
+      }
+      finalizarCaptura(processo);
+    });
+    processo.once("close", (codigo, sinal) => {
+      if (!inicializado) {
+        falhar(
+          mensagemErro ||
+            `tcpdump encerrou durante a inicialização (código ${codigo ?? sinal ?? "desconhecido"}).`,
+        );
+      } else if (codigo !== 0 && sinal !== "SIGINT" && sinal !== "SIGTERM") {
+        console.error(`tcpdump encerrou com código ${codigo ?? "desconhecido"}.`);
+      }
+      finalizarCaptura(processo);
+    });
   });
-  processo.on("error", (erro) => {
-    console.error("Falha no processo tcpdump:", erro);
+
+  try {
+    await pronto;
+  } catch (erro) {
+    processo.kill("SIGTERM");
     finalizarCaptura(processo);
-  });
-  processo.once("close", (codigo, sinal) => {
-    encerrouDuranteInicializacao = true;
-    if (codigo !== 0 && sinal !== "SIGINT" && sinal !== "SIGTERM") {
-      console.error(`tcpdump encerrou com código ${codigo ?? "desconhecido"}.`);
-    }
+    throw erro;
+  }
+
+  if (
+    processo.exitCode !== null ||
+    processo.signalCode !== null ||
+    processoCaptura !== processo
+  ) {
     finalizarCaptura(processo);
-  });
-  if (processo.exitCode !== null || processo.signalCode !== null) {
-    encerrouDuranteInicializacao = true;
+    throw new TcpdumpError("tcpdump encerrou antes de iniciar a captura.");
   }
 
   const expressaoVisivel = filtro.expressao ? ` ${filtro.expressao}` : "";
   const command = `tcpdump -n -l -tttt -i ${interfaceRede} -s 96${expressaoVisivel}`;
-  if (encerrouDuranteInicializacao) {
-    finalizarCaptura(processo);
-    return atualizarCaptura({
-      interface: interfaceRede,
-      command,
-      filter: filtroId,
-      active: false,
-    });
-  }
 
   temporizadorLimite = setTimeout(() => {
     void pararTcpdump();

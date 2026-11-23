@@ -13,15 +13,16 @@ export function obterNo(id: string): NodeRecord | undefined {
     .get(id) as NodeRecord | undefined;
 }
 
-export function criarNo(dados: NewNode): NodeRecord {
+export function criarNo(dados: NewNode, userId: string): NodeRecord {
   const proximo = database
     .prepare("SELECT COALESCE(MAX(CAST(id AS INTEGER)), 0) + 1 AS id FROM nodes")
     .get() as { id: number };
   const registro: NodeRecord = { ...dados, id: String(proximo.id) };
   database
     .prepare(
-      `INSERT INTO nodes (id, host, ip, service, latency, load, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO nodes
+       (id, host, ip, service, latency, load, status, created_by_user_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .run(
       registro.id,
@@ -31,6 +32,7 @@ export function criarNo(dados: NewNode): NodeRecord {
       registro.latency,
       registro.load,
       registro.status,
+      userId,
     );
   return registro;
 }

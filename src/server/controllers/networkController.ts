@@ -1,4 +1,4 @@
-import type { IncomingMessage, ServerResponse } from "node:http";
+import type { Request, Response } from "express";
 import type { TLSSocket } from "node:tls";
 import {
   obterEstadoCaptura,
@@ -19,7 +19,7 @@ import {
   validarCampos,
 } from "./httpController.js";
 
-function requisicaoSegura(request: IncomingMessage): boolean {
+function requisicaoSegura(request: Request): boolean {
   const endereco = request.socket.remoteAddress || "";
   const local =
     endereco === "::1" ||
@@ -33,17 +33,14 @@ function requisicaoSegura(request: IncomingMessage): boolean {
   return local || tlsDireto || tlsProxy;
 }
 
-function autorizarControleCaptura(request: IncomingMessage): void {
+function autorizarControleCaptura(request: Request): void {
   if (!obterOpcoesCaptura().enabled) {
     throw new HttpError(
       503,
       "Captura desativada. Configure tcpdump, interface autorizada e token no servidor.",
     );
   }
-  const autorizacao = request.headers.authorization || "";
-  const token = autorizacao.startsWith("Bearer ")
-    ? autorizacao.slice("Bearer ".length)
-    : "";
+  const token = request.get("x-capture-token");
   if (!validarTokenCaptura(token)) {
     throw new HttpError(401, "Token de captura inválido.");
   }
@@ -56,24 +53,24 @@ function autorizarControleCaptura(request: IncomingMessage): void {
 }
 
 export function controlarOpcoesCaptura(
-  request: IncomingMessage,
-  response: ServerResponse,
+  request: Request,
+  response: Response,
 ): void {
   if (request.method !== "GET") metodoNaoPermitido("GET");
   responderJson(response, 200, obterOpcoesCaptura());
 }
 
 export function controlarEstadoCaptura(
-  request: IncomingMessage,
-  response: ServerResponse,
+  request: Request,
+  response: Response,
 ): void {
   if (request.method !== "GET") metodoNaoPermitido("GET");
   responderJson(response, 200, obterEstadoCaptura());
 }
 
 export async function iniciarCaptura(
-  request: IncomingMessage,
-  response: ServerResponse,
+  request: Request,
+  response: Response,
 ): Promise<void> {
   if (request.method !== "POST") metodoNaoPermitido("POST");
   autorizarControleCaptura(request);
@@ -101,8 +98,8 @@ export async function iniciarCaptura(
 }
 
 export async function pararCaptura(
-  request: IncomingMessage,
-  response: ServerResponse,
+  request: Request,
+  response: Response,
 ): Promise<void> {
   if (request.method !== "POST") metodoNaoPermitido("POST");
   autorizarControleCaptura(request);
@@ -110,8 +107,8 @@ export async function pararCaptura(
 }
 
 export function controlarCamadas(
-  request: IncomingMessage,
-  response: ServerResponse,
+  request: Request,
+  response: Response,
 ): void {
   if (request.method !== "GET") metodoNaoPermitido("GET");
   responderJson(response, 200, listarCamadas());

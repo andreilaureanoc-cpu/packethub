@@ -15,6 +15,11 @@ import {
   obterOpcoesCaptura,
   pararCaptura,
 } from "../models/networkModel.js";
+import {
+  encerrarSessao,
+  obterUsuario,
+} from "../models/authModel.js";
+import { tokenSessionKey } from "../models/apiClient.js";
 import { calcularResumoPacotes } from "../models/packetStatistics.js";
 import { limparErro, mostrarErro } from "../views/dom.js";
 import {
@@ -243,6 +248,49 @@ function monitorarCaptura() {
   }, 2000);
 }
 
+function mostrarSessao(email: string): void {
+  const principal = document.querySelector("main");
+  if (!principal) return;
+
+  const controles = document.createElement("div");
+  controles.className = "mb-3 d-flex align-items-center justify-content-end gap-3";
+  const usuario = document.createElement("span");
+  usuario.className = "nano-text text-subdued";
+  usuario.textContent = email;
+  const sair = document.createElement("button");
+  sair.className = "btn btn-outline-secondary btn-sm";
+  sair.type = "button";
+  sair.textContent = "Sair";
+  sair.addEventListener("click", async () => {
+    sair.disabled = true;
+    try {
+      await encerrarSessao();
+    } catch (erro) {
+      mostrarErro(erro);
+    } finally {
+      window.location.replace("/login.html");
+    }
+  });
+  controles.append(usuario, sair);
+  principal.prepend(controles);
+}
+
+async function iniciarAplicacao(): Promise<void> {
+  if (!sessionStorage.getItem(tokenSessionKey)) {
+    window.location.replace(
+      `/login.html?next=${encodeURIComponent(location.pathname + location.search)}`,
+    );
+    return;
+  }
+  try {
+    const sessao = await obterUsuario();
+    mostrarSessao(sessao.user.email);
+    await carregarPagina();
+  } catch (erro) {
+    mostrarErro(erro);
+  }
+}
+
 document.querySelector("#add-node")?.addEventListener("click", () => {
   recursoEditado = "nodes";
   idEditado = null;
@@ -274,4 +322,4 @@ document
   .querySelector("#capture-toggle")
   ?.addEventListener("click", alternarCaptura);
 
-carregarPagina();
+void iniciarAplicacao();

@@ -1,8 +1,24 @@
+export const tokenSessionKey = "packethub.jwt";
+
 export async function apiRequest<T>(
   caminho: string,
   opcoes?: RequestInit,
 ): Promise<T> {
-  const resposta = await fetch(`/api${caminho}`, opcoes);
+  const headers = new Headers(opcoes?.headers);
+  const token = sessionStorage.getItem(tokenSessionKey);
+  if (token && !headers.has("Authorization")) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+  const resposta = await fetch(`/api${caminho}`, { ...opcoes, headers });
+  if (
+    resposta.status === 401 &&
+    caminho !== "/auth/login" &&
+    caminho !== "/auth/register"
+  ) {
+    sessionStorage.removeItem(tokenSessionKey);
+    const next = encodeURIComponent(location.pathname + location.search);
+    window.location.replace(`/login.html?next=${next}`);
+  }
   const texto = await resposta.text();
   let dados: unknown = texto;
 

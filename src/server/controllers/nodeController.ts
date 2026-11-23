@@ -1,4 +1,4 @@
-import type { IncomingMessage, ServerResponse } from "node:http";
+import type { Request, Response } from "express";
 import {
   atualizarNo,
   criarNo,
@@ -18,8 +18,8 @@ import {
 const camposNo = ["host", "ip", "service", "latency", "load", "status"];
 
 export async function controlarNos(
-  request: IncomingMessage,
-  response: ServerResponse,
+  request: Request,
+  response: Response,
   id: string | null,
 ): Promise<void> {
   if (request.method === "GET") {
@@ -34,7 +34,11 @@ export async function controlarNos(
       camposNo,
       camposNo,
     ) as unknown as NewNode;
-    responderJson(response, 201, criarNo(dados));
+    responderJson(
+      response,
+      201,
+      criarNo(dados, response.locals.authUser.id),
+    );
     return;
   }
   if (request.method === "PATCH" && id) {

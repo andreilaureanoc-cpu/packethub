@@ -1,4 +1,4 @@
-import type { IncomingMessage, ServerResponse } from "node:http";
+import type { Request, Response } from "express";
 import {
   atualizarPacote,
   criarPacote,
@@ -6,7 +6,7 @@ import {
   listarPacotes,
   obterPacote,
 } from "../models/packetModel.js";
-import type { NewPacket, Packet } from "../models/types.js";
+import type { NewPacket } from "../models/types.js";
 import {
   HttpError,
   lerJson,
@@ -19,8 +19,8 @@ const camposPacote = ["time", "src", "dst", "protocol", "info", "size", "dropped
 const camposObrigatorios = camposPacote.slice(0, 6);
 
 export async function controlarPacotes(
-  request: IncomingMessage,
-  response: ServerResponse,
+  request: Request,
+  response: Response,
   id: string | null,
   url: URL,
 ): Promise<void> {
@@ -42,7 +42,11 @@ export async function controlarPacotes(
       ["dropped"],
       ["info"],
     ) as unknown as NewPacket;
-    responderJson(response, 201, criarPacote(dados));
+    responderJson(
+      response,
+      201,
+      criarPacote(dados, response.locals.authUser.id),
+    );
     return;
   }
   if (request.method === "PATCH" && id) {

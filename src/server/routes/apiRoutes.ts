@@ -1,4 +1,10 @@
-import type { IncomingMessage, ServerResponse } from "node:http";
+import { Router, type Request, type Response } from "express";
+import {
+  entrar,
+  obterSessao,
+  registrar,
+  sair,
+} from "../controllers/authController.js";
 import {
   controlarEstadoCaptura,
   controlarOpcoesCaptura,
@@ -9,6 +15,7 @@ import {
 import { controlarNos } from "../controllers/nodeController.js";
 import { controlarPacotes } from "../controllers/packetController.js";
 import { HttpError } from "../controllers/httpController.js";
+import { autenticar } from "../middleware/authenticationMiddleware.js";
 
 function decodificarId(valor: string): string {
   try {
@@ -19,8 +26,8 @@ function decodificarId(valor: string): string {
 }
 
 export async function tratarApi(
-  request: IncomingMessage,
-  response: ServerResponse,
+  request: Request,
+  response: Response,
   url: URL,
 ): Promise<void> {
   const segmentos = url.pathname.split("/").filter(Boolean);
@@ -69,3 +76,22 @@ export async function tratarApi(
       throw new HttpError(404, "Rota não encontrada.");
   }
 }
+
+export const apiRouter = Router();
+
+apiRouter.post("/auth/register", registrar);
+apiRouter.post("/auth/login", entrar);
+apiRouter.use(autenticar);
+apiRouter.get("/auth/me", obterSessao);
+apiRouter.post("/auth/logout", sair);
+apiRouter.use(async (request, response, next) => {
+  try {
+    await tratarApi(
+      request,
+      response,
+      new URL(request.originalUrl, "http://localhost"),
+    );
+  } catch (erro) {
+    next(erro);
+  }
+});

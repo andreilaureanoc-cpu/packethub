@@ -4,14 +4,22 @@
         "build:watch": "tsc --watch",
         "start": "npm run build && node dist/server/server.js",
         "start:watch": "node --watch dist/server/server.js",
-        "typecheck": "tsc --noEmit"
+        "typecheck": "tsc --noEmit",
+        "test": "npm run build && node --test"
     },
     "type": "module",
     "engines": {
         "node": ">=22.5.0"
     },
     "devDependencies": {
+        "@types/express": "^5.0.6",
+        "@types/jsonwebtoken": "^9.0.10",
         "@types/node": "^26.6.6",
         "typescript": "^7.0.2"
+    },
+    "dependencies": {
+        "dotenv": "^16.6.1",
+        "express": "^5.3.0",
+        "jsonwebtoken": "^9.0.3"
     }
 }

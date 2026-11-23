@@ -34,6 +34,41 @@
 			"isBackground": true,
 			"problemMatcher": [],
 			"group": "build"
+		},
+		{
+			"label": "Start PacketHub (tcpdump)",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"start:watch"
+			],
+			"dependsOn": [
+				"Compile PacketHub (watch)"
+			],
+			"dependsOrder": "sequence",
+			"options": {
+				"env": {
+					"TCPDUMP_ENABLED": "true",
+					"TCPDUMP_INTERFACES": "${input:tcpdumpInterface}",
+					"CAPTURE_ADMIN_TOKEN": "${input:captureAdminToken}"
+				}
+			},
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	],
+	"inputs": [
+		{
+			"id": "tcpdumpInterface",
+			"type": "promptString",
+			"description": "Interface de rede autorizada (veja ip -br link)"
+		},
+		{
+			"id": "captureAdminToken",
+			"type": "promptString",
+			"description": "Token de administração com pelo menos 32 caracteres",
+			"password": true
 		}
 	]
 }
