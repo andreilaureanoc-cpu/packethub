@@ -186,13 +186,8 @@ async function excluirRegistro(recurso: Resource, id: string) {
 async function alternarCaptura() {
   limparErro();
   try {
-    const tokenInput =
-      document.querySelector<HTMLInputElement>("#capture-admin-token");
-    const token = tokenInput?.value.trim();
-    if (!token) throw new Error("Informe o token de administração da captura.");
-
     if (captura.active) {
-      captura = await pararCaptura(token);
+      captura = await pararCaptura();
     } else {
       const interfaceSelect =
         document.querySelector<HTMLSelectElement>("#capture-interface-select");
@@ -204,10 +199,8 @@ async function alternarCaptura() {
       captura = await iniciarCaptura(
         interfaceSelect.value,
         filtroSelect.value,
-        token,
       );
     }
-    if (tokenInput) tokenInput.value = "";
     await carregarCaptura();
   } catch (erro) {
     mostrarErro(erro);

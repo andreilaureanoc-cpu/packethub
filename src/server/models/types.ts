@@ -7,6 +7,7 @@ export type Packet = {
   info: string | Record<string, unknown>;
   size: string;
   dropped?: boolean;
+  source?: "demo" | "capture" | "manual";
 };
 
 export type NewPacket = Omit<Packet, "id">;

@@ -50,8 +50,7 @@
 			"options": {
 				"env": {
 					"TCPDUMP_ENABLED": "true",
-					"TCPDUMP_INTERFACES": "${input:tcpdumpInterface}",
-					"CAPTURE_ADMIN_TOKEN": "${input:captureAdminToken}"
+					"TCPDUMP_INTERFACES": "${input:tcpdumpInterface}"
 				}
 			},
 			"isBackground": true,
@@ -63,12 +62,6 @@
 			"id": "tcpdumpInterface",
 			"type": "promptString",
 			"description": "Interface de rede autorizada (veja ip -br link)"
-		},
-		{
-			"id": "captureAdminToken",
-			"type": "promptString",
-			"description": "Token de administração com pelo menos 32 caracteres",
-			"password": true
 		}
 	]
 }

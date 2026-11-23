@@ -47,7 +47,7 @@ test("Express API registration, JWT protection, persistence, logout and errors",
     assert.equal(
       database.prepare("SELECT COUNT(*) AS count FROM schema_migrations").get()
         .count,
-      2,
+      3,
     );
     assert.ok(
       database
@@ -123,6 +123,7 @@ test("Express API registration, JWT protection, persistence, logout and errors",
       fakeTcpdump,
       `#!/usr/bin/env node
 process.stderr.write("listening on lo, link-type EN10MB (Ethernet), snapshot length 96 bytes\\n");
+process.stdout.write("2026-11-23 12:49:00.123456 IP 127.0.0.1.54321 > 127.0.0.1.443: Flags [S], seq 100, length 0\\n");
 process.on("SIGINT", () => process.exit(0));
 process.on("SIGTERM", () => process.exit(0));
 setInterval(() => {}, 1000);
@@ -131,7 +132,7 @@ setInterval(() => {}, 1000);
     chmodSync(fakeTcpdump, 0o700);
     process.env.TCPDUMP_ENABLED = "true";
     process.env.TCPDUMP_INTERFACES = "lo";
-    process.env.CAPTURE_ADMIN_TOKEN = randomBytes(32).toString("hex");
+    delete process.env.CAPTURE_ADMIN_TOKEN;
     process.env.TCPDUMP_PATH = fakeTcpdump;
 
     response = await fetch(`${baseUrl}/api/capture/options`, {
@@ -140,14 +141,16 @@ setInterval(() => {}, 1000);
     assert.equal(response.status, 200);
     assert.equal((await response.json()).enabled, true);
 
-    const captureHeaders = {
-      ...authorization,
-      "Content-Type": "application/json",
-      "X-Capture-Token": process.env.CAPTURE_ADMIN_TOKEN,
-    };
     response = await fetch(`${baseUrl}/api/capture/start`, {
       method: "POST",
-      headers: captureHeaders,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ interface: "lo", filter: "tcp" }),
+    });
+    assert.equal(response.status, 401);
+
+    response = await fetch(`${baseUrl}/api/capture/start`, {
+      method: "POST",
+      headers: { ...authorization, "Content-Type": "application/json" },
       body: JSON.stringify({ interface: "lo", filter: "tcp" }),
     });
     assert.equal(response.status, 200);
@@ -155,10 +158,20 @@ setInterval(() => {}, 1000);
 
     response = await fetch(`${baseUrl}/api/capture/stop`, {
       method: "POST",
-      headers: captureHeaders,
+      headers: authorization,
     });
     assert.equal(response.status, 200);
     assert.equal((await response.json()).active, false);
+
+    response = await fetch(`${baseUrl}/api/packetRecords`, {
+      headers: authorization,
+    });
+    assert.equal(response.status, 200);
+    const capturedPackets = await response.json();
+    assert.equal(capturedPackets.length, 1);
+    assert.equal(capturedPackets[0].protocol, "TCP");
+    assert.equal(capturedPackets[0].src, "127.0.0.1.54321");
+    assert.equal(capturedPackets[0].source, "capture");
 
     response = await fetch(`${baseUrl}/api/nodeRecords`, {
       headers: { Authorization: "Bearer invalid-token" },

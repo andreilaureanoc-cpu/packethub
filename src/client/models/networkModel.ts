@@ -16,23 +16,16 @@ export function obterOpcoesCaptura(): Promise<CaptureOptions> {
 export function iniciarCaptura(
   interfaceRede: string,
   filtro: string,
-  token: string,
 ): Promise<Capture> {
   return apiRequest("/capture/start", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Capture-Token": token,
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ interface: interfaceRede, filter: filtro }),
   });
 }
 
-export function pararCaptura(token: string): Promise<Capture> {
-  return apiRequest("/capture/stop", {
-    method: "POST",
-    headers: { "X-Capture-Token": token },
-  });
+export function pararCaptura(): Promise<Capture> {
+  return apiRequest("/capture/stop", { method: "POST" });
 }
 
 export function listarCamadas(): Promise<NetworkLayer[]> {

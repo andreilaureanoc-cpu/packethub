@@ -40,13 +40,15 @@ Requer Node.js 22.5 ou superior. Instale as dependências com `npm install`, cop
 
 Os dados são persistidos em SQLite no arquivo `data/packethub.sqlite`. Migrations versionadas em `src/server/migrations/` criam e evoluem o schema; na primeira inicialização, o banco também recebe os dados de demonstração de [seed.sql](src/server/seed.sql). O client nativo `node:sqlite` executa as consultas parametrizadas. Para usar outro caminho, defina `DATABASE_PATH`.
 
+Os pacotes exibidos passam a ser exclusivamente dados reais do `tcpdump`. Ao iniciar uma captura, os registros demonstrativos existentes na tabela de pacotes são removidos; o filtro e o histórico mostram apenas os pacotes capturados desde a inicialização da captura.
+
 O painel exige cadastro ou login em `login.html`. As senhas são armazenadas com scrypt; o servidor assina JWTs de uma hora com `JWT_SECRET`, protege as rotas da API e revoga o token no logout. O navegador mantém o token somente na sessão da aba. Registros de pacotes e nós criados por usuários guardam uma relação opcional com o usuário autor.
 
 Use `npm test` para compilar e executar os testes de integração da API. `npm run typecheck` valida os tipos sem gerar arquivos.
 
 Para desenvolvimento com recompilação de TypeScript e reinício automático do servidor, inicie a tarefa **Start PacketHub** no VS Code. No terminal, execute `npm run build:watch` e `npm run start:watch` em terminais separados. Durante uma captura ativa, o painel consulta o estado e atualiza os pacotes a cada dois segundos.
 
-Para captura pelo VS Code, instale `tcpdump` (por exemplo, `sudo apt install tcpdump`) e conceda ao processo as permissões de captura necessárias; depois pare a tarefa **Start PacketHub** e inicie **Start PacketHub (tcpdump)**. A tarefa solicitará a interface autorizada e o token. Gere o `CAPTURE_ADMIN_TOKEN` com `openssl rand -hex 32` e use o mesmo valor no painel. Alternativamente, defina `TCPDUMP_ENABLED=true`, `TCPDUMP_INTERFACES` como uma lista explícita de interfaces autorizadas e `CAPTURE_ADMIN_TOKEN` no `.env`. A captura fica desativada por padrão, não usa a interface genérica `any`, aceita somente filtros predefinidos, armazena metadados resumidos e para após 1.000 pacotes ou cinco minutos. O tcpdump captura tráfego; ele não o gera.
+Para captura pelo VS Code, instale `tcpdump` (por exemplo, `sudo apt install tcpdump`) e conceda ao processo as permissões de captura necessárias; depois pare a tarefa **Start PacketHub** e inicie **Start PacketHub (tcpdump)**. A tarefa solicitará a interface autorizada. Alternativamente, defina `TCPDUMP_ENABLED=true` e `TCPDUMP_INTERFACES` como uma lista explícita de interfaces autorizadas no `.env`. Os controles de captura exigem uma sessão autenticada no painel e HTTPS para acessos remotos. A captura fica desativada por padrão, não usa a interface genérica `any`, aceita somente filtros predefinidos, armazena metadados resumidos e para após 1.000 pacotes ou cinco minutos. O tcpdump captura tráfego; ele não o gera.
 
 ## Organização do código TypeScript
 
@@ -54,7 +56,7 @@ O código segue MVC. No cliente, `models/` acessa a API e calcula dados, `views/
 
 ## Captura de tráfego e registro de visitas
 
-A captura real é opcional e fica desativada por padrão. Para habilitá-la, o servidor precisa ter `tcpdump` instalado e permissões de captura concedidas pelo administrador do host. Configure `TCPDUMP_ENABLED=true`, `TCPDUMP_INTERFACES` com uma lista explícita de interfaces autorizadas (por exemplo, `eth0`) e `CAPTURE_ADMIN_TOKEN` com um segredo aleatório de pelo menos 32 caracteres. O token é informado no painel e não é salvo no navegador nem no banco.
+A captura real é opcional e fica desativada por padrão. Para habilitá-la, o servidor precisa ter `tcpdump` instalado e permissões de captura concedidas pelo administrador do host. Configure `TCPDUMP_ENABLED=true` e `TCPDUMP_INTERFACES` com uma lista explícita de interfaces autorizadas (por exemplo, `eth0`). Os controles usam a autenticação normal do painel, sem um token adicional de administração; o controle remoto exige HTTPS.
 
 O painel oferece filtros predefinidos (todo tráfego, TCP, UDP, ICMP e DNS); comandos livres não são aceitos. A captura guarda somente metadados resumidos, para no máximo 1.000 pacotes ou após cinco minutos e requer HTTPS para controles remotos. Em implantação atrás de um proxy HTTPS confiável, configure `TRUST_PROXY=true`.
 

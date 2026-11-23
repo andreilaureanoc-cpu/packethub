@@ -17,6 +17,7 @@ function mapearPacote(linha: PacketRow): Packet {
     size: linha.size,
   };
   if (linha.dropped !== null) pacote.dropped = Boolean(linha.dropped);
+  if (linha.source) pacote.source = linha.source;
   return pacote;
 }
 
@@ -47,8 +48,8 @@ export function criarPacote(
   database
     .prepare(
       `INSERT INTO packets
-       (id, time, src, dst, protocol, info_json, size, dropped, created_by_user_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (id, time, src, dst, protocol, info_json, size, dropped, created_by_user_id, source)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .run(
       pacote.id,
@@ -60,8 +61,15 @@ export function criarPacote(
       pacote.size,
       pacote.dropped === undefined ? null : Number(pacote.dropped),
       userId ?? null,
+      pacote.source ?? (userId ? "manual" : "capture"),
     );
   return pacote;
+}
+
+export function limparPacotesDemonstrativos(): number {
+  return Number(database
+    .prepare("DELETE FROM packets WHERE source = 'demo'")
+    .run().changes);
 }
 
 export function atualizarPacote(

@@ -8,7 +8,6 @@ import {
   TcpdumpError,
   validarFiltroCaptura,
   validarInterfaceCaptura,
-  validarTokenCaptura,
 } from "../infrastructure/tcpdumpProcess.js";
 import { listarCamadas } from "../models/layerModel.js";
 import {
@@ -37,12 +36,8 @@ function autorizarControleCaptura(request: Request): void {
   if (!obterOpcoesCaptura().enabled) {
     throw new HttpError(
       503,
-      "Captura desativada. Configure tcpdump, interface autorizada e token no servidor.",
+      "Captura desativada. Configure tcpdump e uma interface autorizada no servidor.",
     );
-  }
-  const token = request.get("x-capture-token");
-  if (!validarTokenCaptura(token)) {
-    throw new HttpError(401, "Token de captura inválido.");
   }
   if (!requisicaoSegura(request)) {
     throw new HttpError(

@@ -133,10 +133,6 @@ export function mostrarOpcoesCaptura(
     filtroSelect.disabled = !opcoes.enabled;
   }
 
-  const tokenInput =
-    document.querySelector<HTMLInputElement>("#capture-admin-token");
-  if (tokenInput) tokenInput.disabled = !opcoes.enabled;
-
   const botao = document.querySelector<HTMLButtonElement>("#capture-toggle");
   if (botao) botao.disabled = !opcoes.enabled && !capturaAtiva;
 

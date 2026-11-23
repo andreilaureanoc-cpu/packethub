@@ -2,11 +2,13 @@ import {
   spawn,
   type ChildProcessByStdio,
 } from "node:child_process";
-import { timingSafeEqual } from "node:crypto";
 import { networkInterfaces } from "node:os";
 import type { Readable } from "node:stream";
 import { atualizarCaptura, obterCaptura } from "../models/captureModel.js";
-import { criarPacote } from "../models/packetModel.js";
+import {
+  criarPacote,
+  limparPacotesDemonstrativos,
+} from "../models/packetModel.js";
 import type { Capture, Packet } from "../models/types.js";
 
 const filtros = [
@@ -45,11 +47,7 @@ function listarInterfacesPermitidas(): string[] {
 
 export function obterOpcoesCaptura() {
   const interfaces = listarInterfacesPermitidas();
-  const temToken =
-    typeof process.env.CAPTURE_ADMIN_TOKEN === "string" &&
-    process.env.CAPTURE_ADMIN_TOKEN.length >= 32;
-  const enabled =
-    process.env.TCPDUMP_ENABLED === "true" && interfaces.length > 0 && temToken;
+  const enabled = process.env.TCPDUMP_ENABLED === "true" && interfaces.length > 0;
 
   return {
     enabled,
@@ -57,19 +55,8 @@ export function obterOpcoesCaptura() {
     filters: filtros.map(({ id, label }) => ({ id, label })),
     message: enabled
       ? ""
-      : "Captura desativada. Configure tcpdump, interface autorizada e token de administração no servidor.",
+      : "Captura desativada. Configure tcpdump e uma interface autorizada no servidor.",
   };
-}
-
-export function validarTokenCaptura(token: string | undefined): boolean {
-  const esperado = process.env.CAPTURE_ADMIN_TOKEN;
-  if (!esperado || esperado.length < 32 || !token) return false;
-  const recebidoBuffer = Buffer.from(token);
-  const esperadoBuffer = Buffer.from(esperado);
-  return (
-    recebidoBuffer.length === esperadoBuffer.length &&
-    timingSafeEqual(recebidoBuffer, esperadoBuffer)
-  );
 }
 
 export function validarInterfaceCaptura(interfaceRede: string): boolean {
@@ -194,6 +181,8 @@ export async function iniciarTcpdump(
     throw new TcpdumpError("tcpdump encerrou antes de iniciar a captura.");
   }
 
+  limparPacotesDemonstrativos();
+
   const expressaoVisivel = filtro.expressao ? ` ${filtro.expressao}` : "";
   const command = `tcpdump -n -l -tttt -i ${interfaceRede} -s 96${expressaoVisivel}`;
 
@@ -243,28 +232,31 @@ function lerSaidaTcpdump(
   processo: TcpdumpChild,
 ): void {
   let buffer = "";
+  const processarLinha = (linha: string) => {
+    const pacote = converterLinhaTcpdump(linha);
+    if (!pacote) return;
+    try {
+      criarPacote({ ...pacote, source: "capture" });
+      totalPacotesCapturados += 1;
+      if (totalPacotesCapturados >= limitePacotes) {
+        void pararTcpdump();
+      }
+    } catch (erro) {
+      console.error("Não foi possível salvar metadados do pacote:", erro);
+      void pararTcpdump();
+    }
+  };
+
   processo.stdout.setEncoding("utf8");
   processo.stdout.on("data", (parte: string) => {
     buffer += parte;
     if (buffer.length > 8192 && !buffer.includes("\n")) buffer = "";
     const linhas = buffer.split(/\r?\n/);
     buffer = linhas.pop() || "";
-    for (const linha of linhas) {
-      const pacote = converterLinhaTcpdump(linha);
-      if (!pacote) continue;
-      try {
-        criarPacote(pacote);
-        totalPacotesCapturados += 1;
-        if (totalPacotesCapturados >= limitePacotes) {
-          void pararTcpdump();
-          return;
-        }
-      } catch (erro) {
-        console.error("Não foi possível salvar metadados do pacote:", erro);
-        void pararTcpdump();
-        return;
-      }
-    }
+    for (const linha of linhas) processarLinha(linha);
+  });
+  processo.stdout.on("end", () => {
+    if (buffer.trim()) processarLinha(buffer.trim());
   });
 }
 
@@ -275,6 +267,23 @@ export function converterLinhaTcpdump(linha: string): Omit<Packet, "id"> | null 
   if (!timestamp) return null;
 
   const dados = linha.slice(timestamp[0].length);
+
+  if (/^ARP\b/i.test(dados)) {
+    const quemPossui = dados.match(/\bwho-has\s+([^\s,]+)/i);
+    const diz = dados.match(/\btell\s+([^\s,]+)/i);
+    if (quemPossui && diz) {
+      const tamanho = dados.match(/\blength\s+(\d+)/i);
+      return {
+        time: `${timestamp[1]}.${(timestamp[2] || "").slice(0, 3).padEnd(3, "0")}`,
+        src: diz[1],
+        dst: quemPossui[1],
+        protocol: "ARP",
+        info: dados.includes("Request") ? "Who has request" : "ARP packet",
+        size: `${Number(tamanho?.[1] || 0)} B`,
+      };
+    }
+  }
+
   const separadorOrigem = dados.indexOf(" > ");
   if (separadorOrigem < 0) return null;
   const cabecalho = dados.slice(0, separadorOrigem).trim();
@@ -286,13 +295,20 @@ export function converterLinhaTcpdump(linha: string): Omit<Packet, "id"> | null 
   const detalhes = dados.slice(separadorDestino + 2);
   if (!src || !dst) return null;
 
+  const portaSrc = src.match(/\.([0-9]+)$/)?.[1];
+  const portaDst = dst.match(/\.([0-9]+)$/)?.[1];
+  const ehDNS =
+    portaSrc === "53" ||
+    portaDst === "53" ||
+    /\b(?:A|AAAA|PTR|MX|TXT|NS|SRV)\?\b/i.test(detalhes);
   const protocolo =
-    /^ARP\b/.test(cabecalho) ? "ARP" :
-    /\bFlags\s+\[/.test(detalhes) ? "TCP" :
-    /^UDP\b/.test(detalhes) ? "UDP" :
-    /\bICMP6?\b/.test(detalhes) ? "ICMP" :
-    cabecalho.startsWith("IP6 ") ? "IPv6" :
-    "IP";
+    ehDNS ? "DNS"
+    : /\bFlags\s+\[/.test(detalhes) ? "TCP"
+    : /\bUDP\b/i.test(detalhes) ? "UDP"
+    : /\bICMP6?\b/i.test(detalhes) ? "ICMP"
+    : /\bHTTP\b/i.test(detalhes) ? "HTTP"
+    : cabecalho.startsWith("IP6 ") ? "IPv6"
+    : "IP";
   const flags = detalhes.match(/Flags\s+(\[[^\]]+\])/);
   const tamanho = detalhes.match(/\blength\s+(\d+)/i);
   const fracao = (timestamp[2] || "").slice(0, 3).padEnd(3, "0");
