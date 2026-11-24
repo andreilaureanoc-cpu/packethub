@@ -1,4 +1,4 @@
-import { Router, type Request, type Response } from "express";
+import { Router, type NextFunction, type Request, type Response } from "express";
 import {
   entrar,
   obterSessao,
@@ -17,64 +17,27 @@ import { controlarPacotes } from "../controllers/packetController.js";
 import { HttpError } from "../controllers/httpController.js";
 import { autenticar } from "../middleware/authenticationMiddleware.js";
 
-function decodificarId(valor: string): string {
-  try {
-    return decodeURIComponent(valor);
-  } catch {
-    throw new HttpError(400, "Identificador inválido.");
-  }
+function executar(
+  controlador: (
+    request: Request,
+    response: Response,
+  ) => void | Promise<void>,
+) {
+  return (
+    request: Request,
+    response: Response,
+    next: NextFunction,
+  ): void => {
+    Promise.resolve(controlador(request, response)).catch(next);
+  };
 }
 
-export async function tratarApi(
-  request: Request,
-  response: Response,
-  url: URL,
-): Promise<void> {
-  const segmentos = url.pathname.split("/").filter(Boolean);
-  const recurso = segmentos[1];
-  if (segmentos.length > 3) throw new HttpError(404, "Rota não encontrada.");
-
-  switch (recurso) {
-    case "packetRecords":
-      await controlarPacotes(
-        request,
-        response,
-        segmentos[2] ? decodificarId(segmentos[2]) : null,
-        url,
-      );
-      return;
-    case "nodeRecords":
-      await controlarNos(
-        request,
-        response,
-        segmentos[2] ? decodificarId(segmentos[2]) : null,
-      );
-      return;
-    case "capture":
-      if (!segmentos[2]) {
-        controlarEstadoCaptura(request, response);
-        return;
-      }
-      if (segmentos[2] === "options") {
-        controlarOpcoesCaptura(request, response);
-        return;
-      }
-      if (segmentos[2] === "start") {
-        await iniciarCaptura(request, response);
-        return;
-      }
-      if (segmentos[2] === "stop") {
-        await pararCaptura(request, response);
-        return;
-      }
-      throw new HttpError(404, "Rota não encontrada.");
-    case "layers":
-      if (segmentos[2]) throw new HttpError(404, "Rota não encontrada.");
-      controlarCamadas(request, response);
-      return;
-    default:
-      throw new HttpError(404, "Rota não encontrada.");
+function obterId(request: Request): string {
+  const id = request.params.id;
+  if (typeof id !== "string" || id.length === 0) {
+    throw new HttpError(400, "Identificador inválido.");
   }
+  return id;
 }
 
 export const apiRouter = Router();
@@ -84,14 +47,30 @@ apiRouter.post("/auth/login", entrar);
 apiRouter.use(autenticar);
 apiRouter.get("/auth/me", obterSessao);
 apiRouter.post("/auth/logout", sair);
-apiRouter.use(async (request, response, next) => {
-  try {
-    await tratarApi(
-      request,
-      response,
-      new URL(request.originalUrl, "http://localhost"),
-    );
-  } catch (erro) {
-    next(erro);
-  }
-});
+
+apiRouter.route("/packetRecords")
+  .get(executar((request, response) =>
+    controlarPacotes(request, response, null, new URL(request.originalUrl, "http://localhost"))))
+  .post(executar((request, response) =>
+    controlarPacotes(request, response, null, new URL(request.originalUrl, "http://localhost"))));
+apiRouter.route("/packetRecords/:id")
+  .get(executar((request, response) =>
+    controlarPacotes(request, response, obterId(request), new URL(request.originalUrl, "http://localhost"))))
+  .patch(executar((request, response) =>
+    controlarPacotes(request, response, obterId(request), new URL(request.originalUrl, "http://localhost"))))
+  .delete(executar((request, response) =>
+    controlarPacotes(request, response, obterId(request), new URL(request.originalUrl, "http://localhost"))));
+
+apiRouter.route("/nodeRecords")
+  .get(executar((request, response) => controlarNos(request, response, null)))
+  .post(executar((request, response) => controlarNos(request, response, null)));
+apiRouter.route("/nodeRecords/:id")
+  .get(executar((request, response) => controlarNos(request, response, obterId(request))))
+  .patch(executar((request, response) => controlarNos(request, response, obterId(request))))
+  .delete(executar((request, response) => controlarNos(request, response, obterId(request))));
+
+apiRouter.get("/capture", controlarEstadoCaptura);
+apiRouter.get("/capture/options", controlarOpcoesCaptura);
+apiRouter.post("/capture/start", executar(iniciarCaptura));
+apiRouter.post("/capture/stop", executar(pararCaptura));
+apiRouter.get("/layers", controlarCamadas);

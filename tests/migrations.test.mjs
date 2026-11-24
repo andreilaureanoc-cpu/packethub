@@ -35,7 +35,7 @@ test("migrations preserve an existing SQLite database", () => {
     const node = database.prepare("SELECT host, created_by_user_id FROM nodes WHERE id = ?").get("legacy-node");
     assert.equal(node.host, "legacy");
     assert.equal(node.created_by_user_id, null);
-    assert.equal(database.prepare("SELECT COUNT(*) AS count FROM schema_migrations").get().count, 4);
+    assert.equal(database.prepare("SELECT COUNT(*) AS count FROM schema_migrations").get().count, 5);
     assert.ok(database.prepare("PRAGMA table_info(packets)").all().some((column) => column.name === "source"));
     assert.equal(database.prepare("SELECT source FROM packets WHERE id = ?").get("legacy-packet").source, "demo");
     assert.ok(database.prepare("SELECT total_bytes FROM packet_storage WHERE id = 1").get().total_bytes > 0);

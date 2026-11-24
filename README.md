@@ -36,25 +36,263 @@
 
 ## Executar localmente
 
-Requer Node.js 22.5 ou superior. Instale as dependências com `npm install`, copie `.env.example` para `.env` e defina `JWT_SECRET` com pelo menos 32 caracteres aleatórios (gere um valor com `openssl rand -hex 32`). Depois inicie a aplicação com `npm start`. O comando compila o TypeScript e inicia o servidor Express e a API REST na porta configurada em `PORT`.
+Esta seção descreve a execução no seu computador físico com Linux, sem o GitHub Codespaces.
 
-Os dados são persistidos em SQLite no arquivo `data/packethub.sqlite`. Migrations versionadas em `src/server/migrations/` criam e evoluem o schema; na primeira inicialização, o banco também recebe os dados de demonstração de [seed.sql](src/server/seed.sql). O client nativo `node:sqlite` executa as consultas parametrizadas. Para usar outro caminho, defina `DATABASE_PATH`.
+### 1. Instale o Git, o Node.js e o tcpdump
 
-Os pacotes exibidos passam a ser exclusivamente dados reais do `tcpdump`. Ao iniciar uma captura, os registros demonstrativos existentes na tabela de pacotes são removidos; o filtro e o histórico mostram apenas os pacotes capturados desde a inicialização da captura.
+No Ubuntu, Debian ou distribuições semelhantes:
 
-O painel exige cadastro ou login em `login.html`. As senhas são armazenadas com scrypt; o servidor assina JWTs de uma hora com `JWT_SECRET`, protege as rotas da API e revoga o token no logout. O navegador mantém o token somente na sessão da aba. Registros de pacotes e nós criados por usuários guardam uma relação opcional com o usuário autor.
+```bash
+sudo apt update
+sudo apt install git curl tcpdump nodejs npm iproute2 openssl
+```
 
-Use `npm test` para compilar e executar os testes de integração da API. `npm run typecheck` valida os tipos sem gerar arquivos.
+É necessário Node.js 22.5 ou superior. Confira as versões instaladas:
 
-Para desenvolvimento com recompilação de TypeScript e reinício automático do servidor, inicie a tarefa **Start PacketHub** no VS Code. No terminal, execute `npm run build:watch` e `npm run start:watch` em terminais separados. Durante uma captura ativa, o painel consulta o estado e atualiza os pacotes a cada dois segundos.
+```bash
+node --version
+npm --version
+tcpdump --version
+```
 
-Para captura pelo VS Code, instale `tcpdump` (por exemplo, `sudo apt install tcpdump`) e conceda ao processo as permissões de captura necessárias; depois pare a tarefa **Start PacketHub** e inicie **Start PacketHub (tcpdump)**. A tarefa solicitará a interface autorizada. Alternativamente, defina `TCPDUMP_ENABLED=true` e `TCPDUMP_INTERFACES` como uma lista explícita de interfaces autorizadas no `.env`. Os controles de captura exigem uma sessão autenticada no painel e HTTPS para acessos remotos. A captura fica desativada por padrão, não usa a interface genérica `any`, aceita somente filtros predefinidos, armazena metadados resumidos e para após 1.000 pacotes ou cinco minutos. O tcpdump captura tráfego; ele não o gera.
+Se a versão do Node.js estiver desatualizada, instale o Node.js 24 pelo NVM:
 
-No Codespaces, use `npm run start:codespaces` para instalar dependências ausentes, configurar o `.env`, escolher uma interface ativa e iniciar o servidor sem um arquivo `.sh`. Também é possível escolher a interface com `IFACE=eth0 npm run start:codespaces`. O comando não instala pacotes do sistema nem altera permissões privilegiadas: `tcpdump` precisa estar instalado e autorizado pelo administrador do ambiente. A captura guarda o resumo de cada linha de pacote emitida pelo tcpdump, inclusive protocolos desconhecidos; campos de endereço indisponíveis aparecem como `-`.
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+exec bash
+nvm install 24
+nvm use 24
+```
+
+### 2. Baixe o projeto
+
+```bash
+cd ~
+git clone https://github.com/andreilaureanoc-cpu/packethub.git
+cd packethub
+```
+
+### 3. Instale as dependências
+
+```bash
+npm install
+```
+
+### 4. Configure o ambiente
+
+Copie o arquivo de exemplo:
+
+```bash
+cp .env.example .env
+```
+
+Gere uma chave de segurança:
+
+```bash
+openssl rand -hex 32
+```
+
+Abra o arquivo `.env`:
+
+```bash
+nano .env
+```
+
+Exemplo de configuração:
+
+```env
+PORT=8080
+DATABASE_PATH=data/packethub.sqlite
+JWT_SECRET=COLE_AQUI_A_CHAVE_GERADA
+
+TCPDUMP_ENABLED=true
+TCPDUMP_INTERFACES=eth0
+TCPDUMP_PATH=tcpdump
+TRUST_PROXY=false
+```
+
+Substitua `eth0` pela interface de rede ativa do seu computador.
+
+Liste as interfaces disponíveis:
+
+```bash
+ip -br addr
+```
+
+O nome poderá ser `eth0`, `enp3s0`, `wlp2s0` ou semelhante.
+
+### 5. Autorize a captura de pacotes
+
+Instale a biblioteca de permissões:
+
+```bash
+sudo apt install libcap2-bin
+```
+
+Conceda ao `tcpdump` somente as permissões necessárias:
+
+```bash
+sudo setcap cap_net_raw,cap_net_admin=eip /usr/bin/tcpdump
+```
+
+Confirme as permissões:
+
+```bash
+getcap /usr/bin/tcpdump
+```
+
+Depois dessa configuração, não será necessário iniciar o PacketHub com `sudo`.
+
+Se não quiser autorizar a captura real, deixe esta opção no `.env`:
+
+```env
+TCPDUMP_ENABLED=false
+TCPDUMP_INTERFACES=
+```
+
+### 6. Inicie o servidor
+
+Com captura habilitada:
+
+```bash
+npm start
+```
+
+O servidor compila o TypeScript e inicia a aplicação Express e a API REST. Acesse no navegador:
+
+```text
+http://localhost:8080/login.html
+```
+
+Para mudar a porta, altere `PORT` no arquivo `.env`.
+
+### 7. Crie o usuário e teste a aplicação
+
+1. Abra `http://localhost:8080/login.html`.
+2. Cadastre um usuário.
+3. Entre no painel.
+4. Gere algum tráfego na rede.
+
+Por exemplo:
+
+```bash
+ping 1.1.1.1
+curl https://example.com
+```
+
+Depois, inicie a captura na interface do painel.
+
+Para parar o PacketHub, pressione `Ctrl+C` no terminal.
+
+### Desenvolvimento com atualização automática
+
+Em um terminal, execute a compilação contínua:
+
+```bash
+npm run build:watch
+```
+
+Em outro terminal, execute o servidor com reinício automático:
+
+```bash
+npm run start:watch
+```
+
+Durante uma captura ativa, o painel consulta o estado e atualiza os pacotes a cada dois segundos.
+
+### Testes e validação
+
+Execute os testes de integração da API:
+
+```bash
+npm test
+```
+
+Valide os tipos TypeScript sem gerar arquivos:
+
+```bash
+npm run typecheck
+```
+
+### Problemas comuns
+
+#### Interface não encontrada
+
+Liste as interfaces:
+
+```bash
+ip -br addr
+```
+
+Depois, atualize `TCPDUMP_INTERFACES` no `.env` e reinicie o servidor.
+
+#### Tcpdump não encontra permissões
+
+Confirme que as capabilities foram instaladas:
+
+```bash
+getcap /usr/bin/tcpdump
+```
+
+Caso estejam vazias, execute novamente:
+
+```bash
+sudo setcap cap_net_raw,cap_net_admin=eip /usr/bin/tcpdump
+```
+
+#### Nenhum pacote aparece
+
+Teste o `tcpdump` diretamente, substituindo `eth0` pela interface correta:
+
+```bash
+tcpdump -i eth0 -c 5
+```
+
+#### Porta 8080 já está ocupada
+
+Altere a porta no `.env`:
+
+```env
+PORT=3000
+```
+
+Depois, acesse:
+
+```text
+http://localhost:3000/login.html
+```
+
+Os dados são persistidos em SQLite no arquivo `data/packethub.sqlite`. As migrations versionadas em `src/server/migrations/` criam e evoluem o schema; na primeira inicialização, [seed.sql](src/server/seed.sql) registra apenas a configuração inicial neutra da captura e das camadas. O projeto não cria nós ou pacotes fictícios automaticamente. O client nativo `node:sqlite` executa as consultas parametrizadas. Para usar outro caminho, defina `DATABASE_PATH`.
+
+Ao iniciar uma captura, os registros demonstrativos existentes na tabela de pacotes são removidos; o filtro e o histórico mostram apenas os pacotes capturados desde a inicialização da captura. A captura fica desativada por padrão, não usa a interface genérica `any`, aceita somente filtros predefinidos, armazena metadados resumidos e para após 1.000 pacotes ou cinco minutos.
+
+O painel exige cadastro ou login em `login.html`. As senhas são armazenadas com scrypt; o servidor assina JWTs de uma hora com `JWT_SECRET`, protege as rotas da API e revoga o token no logout. O navegador mantém o token somente na sessão da aba.
 
 ## Organização do código TypeScript
 
 O código segue MVC. No cliente, `models/` acessa a API e calcula dados, `views/` renderiza a interface e `controllers/` coordena eventos e fluxo da aplicação. No servidor Express, `routes/` encaminha as rotas, `middleware/` autentica JWTs, `controllers/` implementa os casos de uso e centraliza erros, `models/` consulta o SQLite e `infrastructure/` configura banco e autenticação.
+
+### Fluxo recomendado para alterações
+
+- Interfaces HTTP ficam nas páginas `.html` e nos controladores de cliente.
+- Regras de apresentação ficam em `src/client/views/`.
+- Chamadas à API e estado obtido do servidor ficam em `src/client/models/`.
+- Coordenação de eventos fica em `src/client/controllers/`.
+- Rotas REST ficam em `src/server/routes/`.
+- Validação e casos de uso ficam em `src/server/controllers/`.
+- Consultas e regras de persistência ficam em `src/server/models/`.
+- Banco, autenticação e integração com `tcpdump` ficam em `src/server/infrastructure/`.
+- Mudanças do banco devem ser adicionadas como uma migration numerada em `src/server/migrations/`.
+
+Ao adicionar uma nova página, mantenha o mesmo fluxo:
+
+1. Adicione o HTML da página.
+2. Conecte-a ao `applicationController.ts` ou crie um controlador dedicado.
+3. Coloque chamadas HTTP em `src/client/models/`.
+4. Implemente a renderização em `src/client/views/`.
+5. Exponha a operação em uma rota de `src/server/routes/apiRoutes.ts`.
+6. Valide os dados em `src/server/controllers/`.
+7. Execute consultas em `src/server/models/`.
 
 ## Captura de tráfego e registro de visitas
 
@@ -67,7 +305,7 @@ Na lista de pacotes, tráfego capturado com origem ou destino igual ao IP de um 
 Cada carregamento de página HTML registra uma visita na tabela `access_logs` com endereço IP, User-Agent e página. Esses registros são removidos após um dia. Esse log não autentica nem identifica uma pessoa por si só.
 
 ## Funcionalidades Planejadas (Features)
-- [x] Visualização de métricas (CPU, Memória, Latência) e status de servidores no Dashboard com dados fictícios
+- [x] Visualização de métricas de pacotes, nós monitorados e status de servidores a partir dos dados do servidor
 - [x] Layout responsivo para as telas do sistema (Dashboard, Nós, Alertas e Configurações)
 - [x] Filtro e busca dinâmica por IP, host, serviço e status dos nós
 - [x] API REST local com persistência SQLite para pacotes, nós, captura e camadas

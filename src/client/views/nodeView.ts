@@ -8,6 +8,8 @@ import {
   atualizarTabela,
 } from "./tableView.js";
 
+let renderizarAlertas: (() => void) | null = null;
+
 export function mostrarNos(
   nos: NodeRecord[],
   pacotes: PacketRecord[],
@@ -124,6 +126,9 @@ export function mostrarResumoNos(nos: NodeRecord[]) {
 }
 export function mostrarAlertas(nos: NodeRecord[]) {
   const alertas = nos.filter((no) => no.status !== "Operacional");
+  const indisponiveis = alertas.filter((no) => no.status === "Indisponível").length;
+  const emAtencao = alertas.filter((no) => no.status === "Atenção").length;
+
   document.querySelectorAll("[data-alert-count]").forEach((contador) => {
     contador.textContent = String(alertas.length);
     contador.classList.toggle("d-none", alertas.length === 0);
@@ -134,40 +139,92 @@ export function mostrarAlertas(nos: NodeRecord[]) {
     resumo.textContent = `${alertas.length} ${alertas.length === 1 ? "host requer" : "hosts requerem"} atenção`;
   }
 
-  const lista = document.querySelector("#alerts-body");
-  if (!lista) return;
-  if (alertas.length === 0) {
-    lista.replaceChildren(
-      elemento("p", "py-5 text-center small-text text-muted-brand", "Nenhum host requer atenção no momento."),
-    );
-    return;
+  const cards = document.querySelector("#alert-summary");
+  if (cards) {
+    cards.replaceChildren();
+    const dadosResumo = [
+      ["Indisponíveis", indisponiveis, "text-coral", "Hosts sem operação"],
+      ["Em atenção", emAtencao, "text-amber-brand", "Hosts que exigem acompanhamento"],
+    ];
+    for (const [titulo, quantidade, cor, descricao] of dadosResumo) {
+      const coluna = elemento("div", "col-12 col-sm-6");
+      const card = elemento("article", "h-100 rounded-2 border border-brand-line p-3");
+      const numero = elemento("p", `mb-1 font-display fs-3 fw-bold ${cor}`, formatarNumero.format(Number(quantidade)));
+      const nome = elemento("p", "mb-1 small-text fw-bold", String(titulo));
+      const detalhe = elemento("p", "mb-0 tiny-text text-subdued", String(descricao));
+      card.append(numero, nome, detalhe);
+      coluna.appendChild(card);
+      cards.appendChild(coluna);
+    }
   }
 
-  lista.replaceChildren();
-  for (const no of alertas) {
-    const indisponivel = no.status === "Indisponível";
-    const item = elemento(
-      "article",
-      "d-grid gap-3 border-bottom border-brand-line py-4 grid-cols-sm-alert align-items-sm-center",
-    );
-    const detalhes = elemento("div");
-    const titulo = elemento(
-      "p",
-      "fs-6 fw-semibold mb-0",
-      `${no.host} · ${no.status}`,
-    );
-    const descricao = elemento(
-      "p",
-      "mt-1 small-text text-muted-brand",
-      `${no.ip} · ${no.service} Carga ${no.load} Latência ${no.latency}`,
-    );
-    const gravidade = elemento(
-      "span",
-      `d-inline-flex badge rounded-1 px-2 py-1 tiny-text fw-bold ${indisponivel ? "bg-brand-coral-pale text-coral" : "bg-brand-amber-pale text-amber-brand"}`,
-      indisponivel ? "Indisponível" : "Atenção",
-    );
-    detalhes.append(titulo, descricao);
-    item.append(detalhes, gravidade);
-    lista.appendChild(item);
+  const lista = document.querySelector("#alerts-body");
+  if (!lista) return;
+
+  const filtro = document.querySelector<HTMLSelectElement>("#alert-severity-filter");
+  const renderizar = () => {
+    const gravidade = filtro?.value || "";
+    const filtrados = alertas
+      .filter((no) => !gravidade || no.status === gravidade)
+      .sort((left, right) => {
+        if (left.status === right.status) return left.host.localeCompare(right.host);
+        return left.status === "Indisponível" ? -1 : 1;
+      });
+
+    lista.replaceChildren();
+    if (alertas.length === 0) {
+      lista.appendChild(
+        elemento(
+          "p",
+          "py-5 mb-0 text-center small-text text-muted-brand",
+          "Nenhum host requer atenção no momento.",
+        ),
+      );
+      return;
+    }
+    if (filtrados.length === 0) {
+      lista.appendChild(
+        elemento(
+          "p",
+          "py-5 mb-0 text-center small-text text-muted-brand",
+          "Nenhum alerta corresponde ao filtro selecionado.",
+        ),
+      );
+      return;
+    }
+
+    for (const no of filtrados) {
+      const indisponivel = no.status === "Indisponível";
+      const item = elemento(
+        "article",
+        "d-grid gap-3 border-bottom border-brand-line py-4 grid-cols-sm-alert align-items-sm-center",
+      );
+      const detalhes = elemento("div");
+      const titulo = elemento(
+        "p",
+        "fs-6 fw-semibold mb-0",
+        `${no.host} · ${no.status}`,
+      );
+      const descricao = elemento(
+        "p",
+        "mt-1 mb-0 small-text text-muted-brand",
+        `${no.ip} · ${no.service} · Carga ${no.load} · Latência ${no.latency}`,
+      );
+      const gravidadeBadge = elemento(
+        "span",
+        `d-inline-flex justify-self-start justify-self-sm-end badge rounded-1 px-2 py-1 tiny-text fw-bold ${indisponivel ? "bg-brand-coral-pale text-coral" : "bg-brand-amber-pale text-amber-brand"}`,
+        indisponivel ? "Indisponível" : "Atenção",
+      );
+      detalhes.append(titulo, descricao);
+      item.append(detalhes, gravidadeBadge);
+      lista.appendChild(item);
+    }
+  };
+
+  if (filtro) {
+    if (renderizarAlertas) filtro.removeEventListener("change", renderizarAlertas);
+    renderizarAlertas = renderizar;
+    filtro.addEventListener("change", renderizar);
   }
+  renderizar();
 }
