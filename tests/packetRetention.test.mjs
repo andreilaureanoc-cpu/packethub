@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -6,17 +7,22 @@ import { test } from "node:test";
 
 const temporaryDirectory = mkdtempSync(join(tmpdir(), "packethub-retention-"));
 process.env.DATABASE_PATH = join(temporaryDirectory, "test.sqlite");
+process.env.DATABASE_URL = `file:${process.env.DATABASE_PATH}`;
+execFileSync(process.execPath, ["scripts/migrate.mjs"], {
+  cwd: process.cwd(),
+  env: process.env,
+});
 
 const [{ database }, { criarPacote, obterPacote }] = await Promise.all([
   import("../dist/server/infrastructure/database.js"),
   import("../dist/server/models/packetModel.js"),
 ]);
 
-test("evicts oldest packets of any source when stored packet data reaches 100 MB", () => {
+test("evicts oldest packets of any source when stored packet data reaches 100 MB", async () => {
   const limiteBytes = 100_000_000;
   try {
-    database.prepare("DELETE FROM packets").run();
-    const manual = criarPacote({
+    await database.packet.deleteMany();
+    const manual = await criarPacote({
       time: "12:00:00.000",
       src: "192.0.2.1",
       dst: "192.0.2.2",
@@ -25,7 +31,7 @@ test("evicts oldest packets of any source when stored packet data reaches 100 MB
       size: "64 B",
       source: "manual",
     });
-    const capturaAntiga = criarPacote({
+    const capturaAntiga = await criarPacote({
       time: "12:00:01.000",
       src: "192.0.2.3",
       dst: "192.0.2.4",
@@ -34,11 +40,12 @@ test("evicts oldest packets of any source when stored packet data reaches 100 MB
       size: "64 B",
       source: "capture",
     });
-    database
-      .prepare("UPDATE packet_storage SET total_bytes = ? WHERE id = 1")
-      .run(limiteBytes - 1);
+    await database.packetStorage.update({
+      where: { id: 1 },
+      data: { totalBytes: limiteBytes - 1 },
+    });
 
-    const capturaNova = criarPacote({
+    const capturaNova = await criarPacote({
       time: "12:00:02.000",
       src: "192.0.2.5",
       dst: "192.0.2.6",
@@ -48,16 +55,15 @@ test("evicts oldest packets of any source when stored packet data reaches 100 MB
       source: "capture",
     });
 
-    assert.equal(obterPacote(manual.id), undefined);
-    assert.ok(obterPacote(capturaAntiga.id));
-    assert.ok(obterPacote(capturaNova.id));
+    assert.equal(await obterPacote(manual.id), null);
+    assert.ok(await obterPacote(capturaAntiga.id));
+    assert.ok(await obterPacote(capturaNova.id));
     assert.ok(
-      database
-        .prepare("SELECT total_bytes FROM packet_storage WHERE id = 1")
-        .get().total_bytes < limiteBytes,
+      (await database.packetStorage.findUniqueOrThrow({ where: { id: 1 } }))
+        .totalBytes < limiteBytes,
     );
   } finally {
-    database.close();
+    await database.$disconnect();
     rmSync(temporaryDirectory, { recursive: true, force: true });
   }
 });

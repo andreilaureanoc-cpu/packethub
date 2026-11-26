@@ -23,9 +23,9 @@ export async function controlarNos(
   id: string | null,
 ): Promise<void> {
   if (request.method === "GET") {
-    const no = id ? obterNo(id) : null;
+    const no = id ? await obterNo(id) : null;
     if (id && !no) throw new HttpError(404, "Nó não encontrado.");
-    responderJson(response, 200, id ? no : listarNos());
+    responderJson(response, 200, id ? no : await listarNos());
     return;
   }
   if (request.method === "POST" && !id) {
@@ -37,7 +37,7 @@ export async function controlarNos(
     responderJson(
       response,
       201,
-      criarNo(dados, response.locals.authUser.id),
+      await criarNo(dados, response.locals.authUser.id),
     );
     return;
   }
@@ -47,13 +47,13 @@ export async function controlarNos(
       [],
       camposNo,
     ) as Partial<NewNode>;
-    const no = atualizarNo(id, alteracoes);
+    const no = await atualizarNo(id, alteracoes);
     if (!no) throw new HttpError(404, "Nó não encontrado.");
     responderJson(response, 200, no);
     return;
   }
   if (request.method === "DELETE" && id) {
-    if (!excluirNo(id)) throw new HttpError(404, "Nó não encontrado.");
+    if (!(await excluirNo(id))) throw new HttpError(404, "Nó não encontrado.");
     responderJson(response, 200, {});
     return;
   }

@@ -1,146 +1,130 @@
+import type { Prisma } from "@prisma/client";
 import { database } from "../infrastructure/database.js";
 import type { NewPacket, Packet } from "./types.js";
 
-type PacketRow = Omit<Packet, "info" | "dropped"> & {
-  info_json: string;
-  dropped: number | null;
-};
-
 const limiteArmazenamentoPacotesBytes = 100_000_000;
 
-function obterTotalBytesPacotes(): number {
-  const linha = database
-    .prepare("SELECT total_bytes FROM packet_storage WHERE id = 1")
-    .get() as { total_bytes: number };
-  return linha.total_bytes;
-}
-
-function descartarPacotesMaisAntigos(): void {
-  let totalBytes = obterTotalBytesPacotes();
-  const obterMaisAntigo = database.prepare(
-    "SELECT id FROM packets ORDER BY rowid LIMIT 1",
-  );
-  const excluir = database.prepare("DELETE FROM packets WHERE id = ?");
-
-  while (totalBytes >= limiteArmazenamentoPacotesBytes) {
-    const pacote = obterMaisAntigo.get() as { id: string } | undefined;
-    if (!pacote) return;
-    excluir.run(pacote.id);
-    totalBytes = obterTotalBytesPacotes();
-  }
-}
-
-function executarComLimite<T>(operacao: () => T): T {
-  database.exec("BEGIN IMMEDIATE");
-  try {
-    const resultado = operacao();
-    descartarPacotesMaisAntigos();
-    database.exec("COMMIT");
-    return resultado;
-  } catch (erro) {
-    database.exec("ROLLBACK");
-    throw erro;
-  }
-}
-
-function mapearPacote(linha: PacketRow): Packet {
+function mapearPacote(linha: {
+  id: string;
+  time: string;
+  src: string;
+  dst: string;
+  protocol: string;
+  infoJson: string;
+  size: string;
+  dropped: boolean | null;
+  source: string;
+}): Packet {
   const pacote: Packet = {
     id: linha.id,
     time: linha.time,
     src: linha.src,
     dst: linha.dst,
     protocol: linha.protocol,
-    info: JSON.parse(linha.info_json) as Packet["info"],
+    info: JSON.parse(linha.infoJson) as Packet["info"],
     size: linha.size,
   };
-  if (linha.dropped !== null) pacote.dropped = Boolean(linha.dropped);
-  if (linha.source) pacote.source = linha.source;
+  if (linha.dropped !== null) pacote.dropped = linha.dropped;
+  if (linha.source) pacote.source = linha.source as Packet["source"];
   return pacote;
 }
 
-export function listarPacotes(protocolo = ""): Packet[] {
-  const linhas = protocolo
-    ? database
-        .prepare("SELECT * FROM packets WHERE protocol = ? ORDER BY rowid")
-        .all(protocolo)
-    : database.prepare("SELECT * FROM packets ORDER BY rowid").all();
-  return (linhas as unknown as PacketRow[]).map(mapearPacote);
+async function descartarPacotesMaisAntigos(
+  transaction: Prisma.TransactionClient,
+): Promise<void> {
+  let armazenamento = await transaction.packetStorage.findUniqueOrThrow({
+    where: { id: 1 },
+  });
+
+  while (armazenamento.totalBytes >= limiteArmazenamentoPacotesBytes) {
+    const [maisAntigo] = await transaction.$queryRaw<{ id: string }[]>`
+      SELECT id FROM packets ORDER BY rowid LIMIT 1
+    `;
+    if (!maisAntigo) return;
+    await transaction.packet.delete({ where: { id: maisAntigo.id } });
+    armazenamento = await transaction.packetStorage.findUniqueOrThrow({
+      where: { id: 1 },
+    });
+  }
 }
 
-export function obterPacote(id: string): Packet | undefined {
-  const linha = database
-    .prepare("SELECT * FROM packets WHERE id = ?")
-    .get(id) as PacketRow | undefined;
-  return linha ? mapearPacote(linha) : undefined;
+export async function listarPacotes(protocolo = ""): Promise<Packet[]> {
+  const pacotes = await database.packet.findMany({
+    where: protocolo ? { protocol: protocolo } : undefined,
+  });
+  return pacotes
+    .sort((left, right) =>
+      left.id.localeCompare(right.id, undefined, { numeric: true }),
+    )
+    .map(mapearPacote);
 }
 
-export function criarPacote(
+export async function obterPacote(id: string): Promise<Packet | null> {
+  const pacote = await database.packet.findUnique({ where: { id } });
+  return pacote ? mapearPacote(pacote) : null;
+}
+
+export async function criarPacote(
   dados: NewPacket,
   userId?: string,
-): Packet {
-  return executarComLimite(() => {
-    const proximo = database
-      .prepare("SELECT COALESCE(MAX(CAST(id AS INTEGER)), 0) + 1 AS id FROM packets")
-      .get() as { id: number };
-    const pacote: Packet = { ...dados, id: String(proximo.id) };
-    database
-      .prepare(
-        `INSERT INTO packets
-         (id, time, src, dst, protocol, info_json, size, dropped, created_by_user_id, source)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      )
-      .run(
-        pacote.id,
-        pacote.time,
-        pacote.src,
-        pacote.dst,
-        pacote.protocol,
-        JSON.stringify(pacote.info),
-        pacote.size,
-        pacote.dropped === undefined ? null : Number(pacote.dropped),
-        userId ?? null,
-        pacote.source ?? (userId ? "manual" : "capture"),
-      );
-    return pacote;
+): Promise<Packet> {
+  return database.$transaction(async (transaction) => {
+    const [proximo] = await transaction.$queryRaw<{ id: number }[]>`
+      SELECT COALESCE(MAX(CAST(id AS INTEGER)), 0) + 1 AS id FROM packets
+    `;
+    const criado = await transaction.packet.create({
+      data: {
+        id: String(proximo.id),
+        time: dados.time,
+        src: dados.src,
+        dst: dados.dst,
+        protocol: dados.protocol,
+        infoJson: JSON.stringify(dados.info),
+        size: dados.size,
+        dropped: dados.dropped ?? null,
+        source: dados.source ?? (userId ? "manual" : "capture"),
+        createdByUserId: userId,
+      },
+    });
+    await descartarPacotesMaisAntigos(transaction);
+    return mapearPacote(criado);
   });
 }
 
-export function limparPacotesDemonstrativos(): number {
-  return Number(database
-    .prepare("DELETE FROM packets WHERE source = 'demo'")
-    .run().changes);
+export async function limparPacotesDemonstrativos(): Promise<number> {
+  const resultado = await database.packet.deleteMany({ where: { source: "demo" } });
+  return resultado.count;
 }
 
-export function atualizarPacote(
+export async function atualizarPacote(
   id: string,
   alteracoes: Partial<NewPacket>,
-): Packet | undefined {
-  return executarComLimite(() => {
-    const pacoteAtual = obterPacote(id);
-    if (!pacoteAtual) return undefined;
-    const pacote = { ...pacoteAtual, ...alteracoes };
-    database
-      .prepare(
-        `UPDATE packets
-         SET time = ?, src = ?, dst = ?, protocol = ?, info_json = ?, size = ?, dropped = ?
-         WHERE id = ?`,
-      )
-      .run(
-        pacote.time,
-        pacote.src,
-        pacote.dst,
-        pacote.protocol,
-        JSON.stringify(pacote.info),
-        pacote.size,
-        pacote.dropped === undefined ? null : Number(pacote.dropped),
-        id,
-      );
-    return pacote;
+): Promise<Packet | null> {
+  return database.$transaction(async (transaction) => {
+    const atual = await transaction.packet.findUnique({ where: { id } });
+    if (!atual) return null;
+    const atualizado = await transaction.packet.update({
+      where: { id },
+      data: {
+        ...(alteracoes.time !== undefined && { time: alteracoes.time }),
+        ...(alteracoes.src !== undefined && { src: alteracoes.src }),
+        ...(alteracoes.dst !== undefined && { dst: alteracoes.dst }),
+        ...(alteracoes.protocol !== undefined && { protocol: alteracoes.protocol }),
+        ...(alteracoes.info !== undefined && {
+          infoJson: JSON.stringify(alteracoes.info),
+        }),
+        ...(alteracoes.size !== undefined && { size: alteracoes.size }),
+        ...(alteracoes.dropped !== undefined && {
+          dropped: alteracoes.dropped,
+        }),
+      },
+    });
+    await descartarPacotesMaisAntigos(transaction);
+    return mapearPacote(atualizado);
   });
 }
 
-export function excluirPacote(id: string): boolean {
-  return database.prepare("DELETE FROM packets WHERE id = ?").run(id).changes > 0;
+export async function excluirPacote(id: string): Promise<boolean> {
+  const resultado = await database.packet.deleteMany({ where: { id } });
+  return resultado.count > 0;
 }
-
-executarComLimite(() => undefined);

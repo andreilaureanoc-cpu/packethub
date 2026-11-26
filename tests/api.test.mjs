@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { chmodSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -7,8 +8,13 @@ import { test } from "node:test";
 
 const temporaryDirectory = mkdtempSync(join(tmpdir(), "packethub-test-"));
 process.env.DATABASE_PATH = join(temporaryDirectory, "test.sqlite");
+process.env.DATABASE_URL = `file:${process.env.DATABASE_PATH}`;
 process.env.JWT_SECRET = randomBytes(32).toString("hex");
 process.env.TCPDUMP_ENABLED = "false";
+execFileSync(process.execPath, ["scripts/migrate.mjs"], {
+  cwd: process.cwd(),
+  env: process.env,
+});
 
 const [{ app }, { database }] = await Promise.all([
   import("../dist/server/app.js"),
@@ -39,20 +45,20 @@ test("Express API registration, JWT protection, persistence, logout and errors",
     assert.equal(session.user.email, "operator@example.com");
     assert.ok(session.token);
 
-    const storedUser = database
-      .prepare("SELECT password_hash FROM users WHERE id = ?")
-      .get(session.user.id);
-    assert.match(storedUser.password_hash, /^scrypt\$/);
-    assert.equal(storedUser.password_hash.includes("correct-horse-42"), false);
+    const storedUser = await database.user.findUniqueOrThrow({
+      where: { id: session.user.id },
+    });
+    assert.match(storedUser.passwordHash, /^scrypt\$/);
+    assert.equal(storedUser.passwordHash.includes("correct-horse-42"), false);
     assert.equal(
-      database.prepare("SELECT COUNT(*) AS count FROM schema_migrations").get()
-        .count,
-      5,
+      Number(
+        (await database.$queryRaw`SELECT COUNT(*) AS count FROM _prisma_migrations`)[0]
+          .count,
+      ),
+      2,
     );
     assert.ok(
-      database
-        .prepare("PRAGMA foreign_key_list(nodes)")
-        .all()
+      (await database.$queryRaw`PRAGMA foreign_key_list(nodes)`)
         .some((foreignKey) => foreignKey.table === "users"),
     );
 
@@ -113,10 +119,10 @@ test("Express API registration, JWT protection, persistence, logout and errors",
     });
     assert.equal(response.status, 201);
     const node = await response.json();
-    const persistedNode = database
-      .prepare("SELECT created_by_user_id FROM nodes WHERE id = ?")
-      .get(node.id);
-    assert.equal(persistedNode.created_by_user_id, loginSession.user.id);
+    const persistedNode = await database.node.findUniqueOrThrow({
+      where: { id: node.id },
+    });
+    assert.equal(persistedNode.createdByUserId, loginSession.user.id);
 
     const fakeTcpdump = join(temporaryDirectory, "tcpdump");
     writeFileSync(
@@ -204,7 +210,7 @@ setInterval(() => {}, 1000);
     await new Promise((resolve, reject) =>
       server.close((error) => (error ? reject(error) : resolve())),
     );
-    database.close();
+    await database.$disconnect();
     rmSync(temporaryDirectory, { recursive: true, force: true });
   }
 });

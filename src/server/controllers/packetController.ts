@@ -25,12 +25,14 @@ export async function controlarPacotes(
   url: URL,
 ): Promise<void> {
   if (request.method === "GET") {
-    const pacote = id ? obterPacote(id) : null;
+    const pacote = id ? await obterPacote(id) : null;
     if (id && !pacote) throw new HttpError(404, "Pacote não encontrado.");
     responderJson(
       response,
       200,
-      id ? pacote : listarPacotes(url.searchParams.get("protocol") || ""),
+      id
+        ? pacote
+        : await listarPacotes(url.searchParams.get("protocol") || ""),
     );
     return;
   }
@@ -45,7 +47,7 @@ export async function controlarPacotes(
     responderJson(
       response,
       201,
-      criarPacote(dados, response.locals.authUser.id),
+      await criarPacote(dados, response.locals.authUser.id),
     );
     return;
   }
@@ -57,13 +59,13 @@ export async function controlarPacotes(
       ["dropped"],
       ["info"],
     ) as Partial<NewPacket>;
-    const pacote = atualizarPacote(id, alteracoes);
+    const pacote = await atualizarPacote(id, alteracoes);
     if (!pacote) throw new HttpError(404, "Pacote não encontrado.");
     responderJson(response, 200, pacote);
     return;
   }
   if (request.method === "DELETE" && id) {
-    if (!excluirPacote(id)) throw new HttpError(404, "Pacote não encontrado.");
+    if (!(await excluirPacote(id))) throw new HttpError(404, "Pacote não encontrado.");
     responderJson(response, 200, {});
     return;
   }

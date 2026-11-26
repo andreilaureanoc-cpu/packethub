@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    String   @default(dbgenerated("CURRENT_TIMESTAMP")) @map("created_at")
+  packets      Packet[]
+  nodes        Node[]
+
+  @@map("users")
+}
+
+model RevokedToken {
+  tokenId   String @id @map("token_id")
+  expiresAt Int    @map("expires_at")
+
+  @@map("revoked_tokens")
+}
+
+model Packet {
+  id              String   @id
+  time            String
+  src             String
+  dst             String
+  protocol        String
+  infoJson        String   @map("info_json")
+  size            String
+  dropped         Boolean?
+  createdByUserId String?  @map("created_by_user_id")
+  source          String   @default("demo")
+  createdBy       User?    @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([protocol], map: "packets_protocol_idx")
+  @@index([createdByUserId], map: "packets_created_by_user_idx")
+  @@map("packets")
+}
+
+model Node {
+  id              String  @id
+  host            String
+  ip              String
+  service         String
+  latency         String
+  load            String
+  status          String
+  createdByUserId String? @map("created_by_user_id")
+  createdBy       User?   @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([createdByUserId], map: "nodes_created_by_user_idx")
+  @@map("nodes")
+}
+
+model Capture {
+  id        Int     @id @default(1)
+  interface String
+  command   String
+  duration  String
+  filter    String
+  active    Boolean
+
+  @@map("capture")
+}
+
+model Layer {
+  id            String @id
+  protocolsJson String @map("protocols_json")
+
+  @@map("layers")
+}
+
+model PacketStorage {
+  id         Int @id @default(1)
+  totalBytes Int @map("total_bytes")
+
+  @@map("packet_storage")
+}
+
+model AccessLog {
+  id         Int    @id @default(autoincrement())
+  accessedAt String @default(dbgenerated("CURRENT_TIMESTAMP")) @map("accessed_at")
+  ipAddress  String @map("ip_address")
+  userAgent  String @map("user_agent")
+  page       String
+
+  @@index([accessedAt], map: "access_logs_accessed_at_idx")
+  @@map("access_logs")
+}

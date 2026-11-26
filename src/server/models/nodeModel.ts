@@ -1,66 +1,43 @@
 import { database } from "../infrastructure/database.js";
 import type { NewNode, NodeRecord } from "./types.js";
 
-export function listarNos(): NodeRecord[] {
-  return database
-    .prepare("SELECT * FROM nodes ORDER BY rowid")
-    .all() as unknown as NodeRecord[];
+export async function listarNos(): Promise<NodeRecord[]> {
+  const nos = await database.node.findMany();
+  return nos.sort((left, right) =>
+    left.id.localeCompare(right.id, undefined, { numeric: true }),
+  );
 }
 
-export function obterNo(id: string): NodeRecord | undefined {
-  return database
-    .prepare("SELECT * FROM nodes WHERE id = ?")
-    .get(id) as NodeRecord | undefined;
+export async function obterNo(id: string): Promise<NodeRecord | null> {
+  return database.node.findUnique({ where: { id } });
 }
 
-export function criarNo(dados: NewNode, userId: string): NodeRecord {
-  const proximo = database
-    .prepare("SELECT COALESCE(MAX(CAST(id AS INTEGER)), 0) + 1 AS id FROM nodes")
-    .get() as { id: number };
-  const registro: NodeRecord = { ...dados, id: String(proximo.id) };
-  database
-    .prepare(
-      `INSERT INTO nodes
-       (id, host, ip, service, latency, load, status, created_by_user_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    )
-    .run(
-      registro.id,
-      registro.host,
-      registro.ip,
-      registro.service,
-      registro.latency,
-      registro.load,
-      registro.status,
-      userId,
-    );
-  return registro;
+export async function criarNo(
+  dados: NewNode,
+  userId: string,
+): Promise<NodeRecord> {
+  return database.$transaction(async (transaction) => {
+    const [proximo] = await transaction.$queryRaw<{ id: number }[]>`
+      SELECT COALESCE(MAX(CAST(id AS INTEGER)), 0) + 1 AS id FROM nodes
+    `;
+    return transaction.node.create({
+      data: { ...dados, id: String(proximo.id), createdByUserId: userId },
+    });
+  });
 }
 
-export function atualizarNo(
+export async function atualizarNo(
   id: string,
   alteracoes: Partial<NewNode>,
-): NodeRecord | undefined {
-  const atual = obterNo(id);
-  if (!atual) return undefined;
-  const registro = { ...atual, ...alteracoes };
-  database
-    .prepare(
-      `UPDATE nodes SET host = ?, ip = ?, service = ?, latency = ?, load = ?, status = ?
-       WHERE id = ?`,
-    )
-    .run(
-      registro.host,
-      registro.ip,
-      registro.service,
-      registro.latency,
-      registro.load,
-      registro.status,
-      registro.id,
-    );
-  return registro;
+): Promise<NodeRecord | null> {
+  return database.$transaction(async (transaction) => {
+    const atual = await transaction.node.findUnique({ where: { id } });
+    if (!atual) return null;
+    return transaction.node.update({ where: { id }, data: alteracoes });
+  });
 }
 
-export function excluirNo(id: string): boolean {
-  return database.prepare("DELETE FROM nodes WHERE id = ?").run(id).changes > 0;
+export async function excluirNo(id: string): Promise<boolean> {
+  const resultado = await database.node.deleteMany({ where: { id } });
+  return resultado.count > 0;
 }

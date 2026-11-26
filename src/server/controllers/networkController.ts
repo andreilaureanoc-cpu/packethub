@@ -55,12 +55,12 @@ export function controlarOpcoesCaptura(
   responderJson(response, 200, obterOpcoesCaptura());
 }
 
-export function controlarEstadoCaptura(
+export async function controlarEstadoCaptura(
   request: Request,
   response: Response,
-): void {
+): Promise<void> {
   if (request.method !== "GET") metodoNaoPermitido("GET");
-  responderJson(response, 200, obterEstadoCaptura());
+  responderJson(response, 200, await obterEstadoCaptura());
 }
 
 export async function iniciarCaptura(
@@ -101,10 +101,10 @@ export async function pararCaptura(
   responderJson(response, 200, await pararTcpdump());
 }
 
-export function controlarCamadas(
+export async function controlarCamadas(
   request: Request,
   response: Response,
-): void {
+): Promise<void> {
   if (request.method !== "GET") metodoNaoPermitido("GET");
-  responderJson(response, 200, listarCamadas());
+  responderJson(response, 200, await listarCamadas());
 }

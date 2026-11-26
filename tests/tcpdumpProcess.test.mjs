@@ -1,6 +1,24 @@
 import assert from "node:assert/strict";
-import test from "node:test";
-import { converterLinhaTcpdump } from "../dist/server/infrastructure/tcpdumpProcess.js";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import test, { after } from "node:test";
+
+const temporaryDirectory = mkdtempSync(join(tmpdir(), "packethub-tcpdump-"));
+process.env.DATABASE_PATH = join(temporaryDirectory, "test.sqlite");
+process.env.DATABASE_URL = `file:${process.env.DATABASE_PATH}`;
+execFileSync(process.execPath, ["scripts/migrate.mjs"], {
+  cwd: process.cwd(),
+  env: process.env,
+});
+const { database } = await import("../dist/server/infrastructure/database.js");
+after(async () => {
+  await database.$disconnect();
+  rmSync(temporaryDirectory, { recursive: true, force: true });
+});
+
+const { converterLinhaTcpdump } = await import("../dist/server/infrastructure/tcpdumpProcess.js");
 
 test("preserves packets from protocols without a dedicated decoder", () => {
   const pacote = converterLinhaTcpdump(

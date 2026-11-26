@@ -7,6 +7,7 @@ import { registrarVisita } from "./controllers/siteController.js";
 const projectRoot = resolve(
   fileURLToPath(new URL("../../", import.meta.url)),
 );
+const viewRoot = resolve(projectRoot, "src/server/views");
 
 const contentTypes: Record<string, string> = {
   ".css": "text/css; charset=utf-8",
@@ -34,8 +35,9 @@ function resolverArquivo(pathname: string): string | null {
     return null;
   }
 
-  const file = resolve(projectRoot, `.${pathname}`);
-  if (file !== projectRoot && !file.startsWith(`${projectRoot}${sep}`)) {
+  const fileRoot = extension === ".html" ? viewRoot : projectRoot;
+  const file = resolve(fileRoot, `.${pathname}`);
+  if (file !== fileRoot && !file.startsWith(`${fileRoot}${sep}`)) {
     throw new HttpError(403, "Forbidden");
   }
   if (extension === ".js" && !file.startsWith(`${resolve(projectRoot, "dist/client")}${sep}`)) {
@@ -44,11 +46,11 @@ function resolverArquivo(pathname: string): string | null {
   return file;
 }
 
-export function servirArquivoEstático(
+export async function servirArquivoEstático(
   request: Request,
   response: Response,
   next: NextFunction,
-): void {
+): Promise<void> {
   if (request.method !== "GET" && request.method !== "HEAD") {
     response.set("Allow", "GET, HEAD").status(405).send("Method not allowed");
     return;
@@ -77,7 +79,7 @@ export function servirArquivoEstático(
   const extension = extname(file).toLowerCase();
   if (extension === ".html" && request.method === "GET") {
     try {
-      registrarVisita(request, pathname);
+      await registrarVisita(request, pathname);
     } catch (erro) {
       next(erro);
       return;

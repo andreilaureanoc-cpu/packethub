@@ -29,6 +29,8 @@ let processoCaptura: TcpdumpChild | null = null;
 let inicioCaptura: number | null = null;
 let temporizadorLimite: ReturnType<typeof setTimeout> | null = null;
 let totalPacotesCapturados = 0;
+let filaPersistenciaPacotes = Promise.resolve();
+let finalizacaoCaptura: Promise<void> | null = null;
 
 export class TcpdumpError extends Error {}
 
@@ -68,8 +70,8 @@ export function validarFiltroCaptura(filtro: string): boolean {
   return filtros.some((item) => item.id === filtro);
 }
 
-export function obterEstadoCaptura(): Capture {
-  const captura = obterCaptura();
+export async function obterEstadoCaptura(): Promise<Capture> {
+  const captura = await obterCaptura();
   if (!processoCaptura || inicioCaptura === null) return captura;
   return {
     ...captura,
@@ -82,6 +84,7 @@ export async function iniciarTcpdump(
   interfaceRede: string,
   filtroId: string,
 ): Promise<Capture> {
+  if (finalizacaoCaptura) await finalizacaoCaptura;
   if (!validarInterfaceCaptura(interfaceRede)) {
     throw new TcpdumpError("A captura não está habilitada para essa interface.");
   }
@@ -108,6 +111,8 @@ export async function iniciarTcpdump(
   processoCaptura = processo;
   inicioCaptura = Date.now();
   totalPacotesCapturados = 0;
+  filaPersistenciaPacotes = Promise.resolve();
+  finalizacaoCaptura = null;
   lerSaidaTcpdump(processo);
   let inicializado = false;
   let mensagemErro = "";
@@ -149,7 +154,9 @@ export async function iniciarTcpdump(
       } else {
         falhar(`Não foi possível iniciar tcpdump: ${erro.message}`);
       }
-      finalizarCaptura(processo);
+      void finalizarCaptura(processo).catch((erro) =>
+        console.error("Não foi possível atualizar o estado da captura:", erro),
+      );
     });
     processo.once("close", (codigo, sinal) => {
       if (!inicializado) {
@@ -160,7 +167,9 @@ export async function iniciarTcpdump(
       } else if (codigo !== 0 && sinal !== "SIGINT" && sinal !== "SIGTERM") {
         console.error(`tcpdump encerrou com código ${codigo ?? "desconhecido"}.`);
       }
-      finalizarCaptura(processo);
+      void finalizarCaptura(processo).catch((erro) =>
+        console.error("Não foi possível atualizar o estado da captura:", erro),
+      );
     });
   });
 
@@ -168,7 +177,7 @@ export async function iniciarTcpdump(
     await pronto;
   } catch (erro) {
     processo.kill("SIGTERM");
-    finalizarCaptura(processo);
+    await finalizarCaptura(processo);
     throw erro;
   }
 
@@ -177,17 +186,19 @@ export async function iniciarTcpdump(
     processo.signalCode !== null ||
     processoCaptura !== processo
   ) {
-    finalizarCaptura(processo);
+    await finalizarCaptura(processo);
     throw new TcpdumpError("tcpdump encerrou antes de iniciar a captura.");
   }
 
-  limparPacotesDemonstrativos();
+  await limparPacotesDemonstrativos();
 
   const expressaoVisivel = filtro.expressao ? ` ${filtro.expressao}` : "";
   const command = `tcpdump -n -l -tttt -i ${interfaceRede} -s 96${expressaoVisivel}`;
 
   temporizadorLimite = setTimeout(() => {
-    void pararTcpdump();
+    void pararTcpdump().catch((erro) =>
+      console.error("Não foi possível parar a captura:", erro),
+    );
   }, duracaoMaximaMs);
   return atualizarCaptura({
     interface: interfaceRede,
@@ -201,7 +212,8 @@ export async function iniciarTcpdump(
 export async function pararTcpdump(): Promise<Capture> {
   const processo = processoCaptura;
   if (!processo) {
-    return atualizarCaptura({ active: false });
+    if (finalizacaoCaptura) await finalizacaoCaptura;
+    return obterCaptura();
   }
 
   const encerrado = new Promise<void>((resolve) => {
@@ -218,14 +230,9 @@ export async function pararTcpdump(): Promise<Capture> {
     }, duracaoParadaMs);
   });
   await encerrado;
-  finalizarCaptura(processo);
-  return atualizarCaptura({
-    active: false,
-    duration:
-      inicioCaptura === null
-        ? obterCaptura().duration
-        : formatarDuracao(Date.now() - inicioCaptura),
-  });
+  await filaPersistenciaPacotes;
+  await finalizarCaptura(processo);
+  return obterCaptura();
 }
 
 function lerSaidaTcpdump(
@@ -235,16 +242,22 @@ function lerSaidaTcpdump(
   const processarLinha = (linha: string) => {
     const pacote = converterLinhaTcpdump(linha);
     if (!pacote) return;
-    try {
-      criarPacote({ ...pacote, source: "capture" });
-      totalPacotesCapturados += 1;
-      if (totalPacotesCapturados >= limitePacotes) {
-        void pararTcpdump();
-      }
-    } catch (erro) {
-      console.error("Não foi possível salvar metadados do pacote:", erro);
-      void pararTcpdump();
-    }
+    filaPersistenciaPacotes = filaPersistenciaPacotes
+      .then(async () => {
+        await criarPacote({ ...pacote, source: "capture" });
+        totalPacotesCapturados += 1;
+        if (totalPacotesCapturados >= limitePacotes) {
+          void pararTcpdump().catch((erro) =>
+            console.error("Não foi possível parar a captura:", erro),
+          );
+        }
+      })
+      .catch((erro: unknown) => {
+        console.error("Não foi possível salvar metadados do pacote:", erro);
+        void pararTcpdump().catch((erro) =>
+          console.error("Não foi possível parar a captura:", erro),
+        );
+      });
   };
 
   processo.stdout.setEncoding("utf8");
@@ -345,17 +358,22 @@ export function converterLinhaTcpdump(linha: string): Omit<Packet, "id"> | null 
 
 function finalizarCaptura(
   processo: TcpdumpChild,
-): void {
-  if (processoCaptura !== processo) return;
+): Promise<void> {
+  if (processoCaptura !== processo) {
+    return finalizacaoCaptura ?? Promise.resolve();
+  }
   processoCaptura = null;
   if (temporizadorLimite) clearTimeout(temporizadorLimite);
   temporizadorLimite = null;
   const duracao =
     inicioCaptura === null
-      ? obterCaptura().duration
+      ? "00:00:00"
       : formatarDuracao(Date.now() - inicioCaptura);
   inicioCaptura = null;
-  atualizarCaptura({ active: false, duration: duracao });
+  finalizacaoCaptura = filaPersistenciaPacotes.then(async () => {
+    await atualizarCaptura({ active: false, duration: duracao });
+  });
+  return finalizacaoCaptura;
 }
 
 function formatarDuracao(duracaoMs: number): string {
@@ -368,8 +386,8 @@ function formatarDuracao(duracaoMs: number): string {
     .join(":");
 }
 
-if (obterCaptura().active) {
-  atualizarCaptura({
+if ((await obterCaptura()).active) {
+  await atualizarCaptura({
     active: false,
     command: "tcpdump (desativado)",
     duration: "00:00:00",

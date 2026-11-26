@@ -1,17 +1,24 @@
 import { database } from "../infrastructure/database.js";
 
-export function registrarAcesso(
+export async function registrarAcesso(
   ipAddress: string,
   userAgent: string,
   page: string,
-): void {
-  database
-    .prepare("DELETE FROM access_logs WHERE accessed_at < datetime('now', '-1 day')")
-    .run();
-  database
-    .prepare(
-      `INSERT INTO access_logs (ip_address, user_agent, page)
-       VALUES (?, ?, ?)`,
-    )
-    .run(ipAddress.slice(0, 64), userAgent.slice(0, 512), page.slice(0, 512));
+): Promise<void> {
+  const limite = new Date(Date.now() - 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 19)
+    .replace("T", " ");
+  await database.$transaction([
+    database.accessLog.deleteMany({
+      where: { accessedAt: { lt: limite } },
+    }),
+    database.accessLog.create({
+      data: {
+        ipAddress: ipAddress.slice(0, 64),
+        userAgent: userAgent.slice(0, 512),
+        page: page.slice(0, 512),
+      },
+    }),
+  ]);
 }

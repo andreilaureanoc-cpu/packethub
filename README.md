@@ -102,7 +102,7 @@ Exemplo de configuração:
 
 ```env
 PORT=8080
-DATABASE_PATH=data/packethub.sqlite
+DATABASE_URL=file:../data/packethub.sqlite
 JWT_SECRET=COLE_AQUI_A_CHAVE_GERADA
 
 TCPDUMP_ENABLED=true
@@ -262,7 +262,7 @@ Depois, acesse:
 http://localhost:3000/login.html
 ```
 
-Os dados são persistidos em SQLite no arquivo `data/packethub.sqlite`. As migrations versionadas em `src/server/migrations/` criam e evoluem o schema; na primeira inicialização, [seed.sql](src/server/seed.sql) registra apenas a configuração inicial neutra da captura e das camadas. O projeto não cria nós ou pacotes fictícios automaticamente. O client nativo `node:sqlite` executa as consultas parametrizadas. Para usar outro caminho, defina `DATABASE_PATH`.
+Os dados são persistidos em SQLite no arquivo `data/packethub.sqlite` por meio do Prisma Client. O comando `npm start` aplica as migrations em `prisma/migrations/`; `npm run db:migrate` as aplica sem iniciar o servidor. Na primeira inicialização, a camada de infraestrutura cria apenas a configuração neutra da captura e das camadas. O projeto não cria nós ou pacotes fictícios automaticamente. Para usar outro caminho, configure `DATABASE_URL` (o `DATABASE_PATH` continua aceito por compatibilidade).
 
 Ao iniciar uma captura, os registros demonstrativos existentes na tabela de pacotes são removidos; o filtro e o histórico mostram apenas os pacotes capturados desde a inicialização da captura. A captura fica desativada por padrão, não usa a interface genérica `any`, aceita somente filtros predefinidos, armazena metadados resumidos e para após 1.000 pacotes ou cinco minutos.
 
@@ -270,19 +270,19 @@ O painel exige cadastro ou login em `login.html`. As senhas são armazenadas com
 
 ## Organização do código TypeScript
 
-O código segue MVC. No cliente, `models/` acessa a API e calcula dados, `views/` renderiza a interface e `controllers/` coordena eventos e fluxo da aplicação. No servidor Express, `routes/` encaminha as rotas, `middleware/` autentica JWTs, `controllers/` implementa os casos de uso e centraliza erros, `models/` consulta o SQLite e `infrastructure/` configura banco e autenticação.
+O código segue MVC. No cliente, `models/` acessa a API e calcula dados, `views/` renderiza a interface e `controllers/` coordena eventos e fluxo da aplicação. No servidor Express, `views/` contém as páginas HTML, `routes/` encaminha as rotas, `middleware/` autentica JWTs, `controllers/` implementa os casos de uso e centraliza erros, `models/` encapsula as operações Prisma e `infrastructure/` configura banco e autenticação.
 
 ### Fluxo recomendado para alterações
 
-- Interfaces HTTP ficam nas páginas `.html` e nos controladores de cliente.
+- Interfaces HTTP ficam nas páginas `.html` em `src/server/views/` e nos controladores de cliente.
 - Regras de apresentação ficam em `src/client/views/`.
 - Chamadas à API e estado obtido do servidor ficam em `src/client/models/`.
 - Coordenação de eventos fica em `src/client/controllers/`.
 - Rotas REST ficam em `src/server/routes/`.
 - Validação e casos de uso ficam em `src/server/controllers/`.
-- Consultas e regras de persistência ficam em `src/server/models/`.
+- Consultas e regras de persistência ficam em `src/server/models/`, usando o Prisma Client.
 - Banco, autenticação e integração com `tcpdump` ficam em `src/server/infrastructure/`.
-- Mudanças do banco devem ser adicionadas como uma migration numerada em `src/server/migrations/`.
+- O schema Prisma fica em `prisma/schema.prisma`; mudanças devem gerar migrations em `prisma/migrations/`. As migrations antigas em `src/server/migrations/` são mantidas somente para atualizar bancos de versões anteriores.
 
 Ao adicionar uma nova página, mantenha o mesmo fluxo:
 

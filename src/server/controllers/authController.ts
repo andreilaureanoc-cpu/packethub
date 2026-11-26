@@ -50,11 +50,11 @@ export async function registrar(
 ): Promise<void> {
   obterJwtSecret();
   const { email, password } = validarCredenciais(request.body);
-  if (obterUsuarioPorEmail(email)) {
+  if (await obterUsuarioPorEmail(email)) {
     throw new HttpError(409, "Já existe uma conta com este e-mail.");
   }
 
-  const usuario = criarUsuario(
+  const usuario = await criarUsuario(
     randomUUID(),
     email,
     await gerarHashSenha(password),
@@ -71,8 +71,8 @@ export async function entrar(
 ): Promise<void> {
   obterJwtSecret();
   const { email, password } = validarCredenciais(request.body);
-  const usuario = obterUsuarioPorEmail(email);
-  if (!usuario || !(await verificarSenha(password, usuario.password_hash))) {
+  const usuario = await obterUsuarioPorEmail(email);
+  if (!usuario || !(await verificarSenha(password, usuario.passwordHash))) {
     throw new HttpError(401, "E-mail ou senha inválidos.");
   }
   responderSessao(response, { id: usuario.id, email: usuario.email }, 200);
@@ -83,8 +83,11 @@ export function obterSessao(_request: Request, response: Response): void {
   responderJson(response, 200, { user: { id, email } });
 }
 
-export function sair(_request: Request, response: Response): void {
+export async function sair(
+  _request: Request,
+  response: Response,
+): Promise<void> {
   const { tokenId, expiresAt } = response.locals.authUser;
-  revogarToken(tokenId, expiresAt);
+  await revogarToken(tokenId, expiresAt);
   response.status(204).end();
 }

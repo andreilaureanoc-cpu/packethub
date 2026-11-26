@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { database } from "../infrastructure/database.js";
 
 export type User = {
@@ -5,42 +6,55 @@ export type User = {
   email: string;
 };
 
-type UserRow = User & { password_hash: string };
+export type UserWithPassword = User & { passwordHash: string };
 
-export function obterUsuarioPorEmail(email: string): UserRow | undefined {
-  return database
-    .prepare("SELECT id, email, password_hash FROM users WHERE email = ?")
-    .get(email) as UserRow | undefined;
+export async function obterUsuarioPorEmail(
+  email: string,
+): Promise<UserWithPassword | null> {
+  const usuario = await database.user.findUnique({ where: { email } });
+  if (!usuario) return null;
+  return {
+    id: usuario.id,
+    email: usuario.email,
+    passwordHash: usuario.passwordHash,
+  };
 }
 
-export function criarUsuario(
+export async function criarUsuario(
   id: string,
   email: string,
   passwordHash: string,
-): User | undefined {
-  const result = database
-    .prepare(
-      `INSERT INTO users (id, email, password_hash)
-       VALUES (?, ?, ?)
-       ON CONFLICT(email) DO NOTHING`,
-    )
-    .run(id, email, passwordHash);
-  return result.changes ? { id, email } : undefined;
+): Promise<User | null> {
+  try {
+    return await database.user.create({
+      data: { id, email, passwordHash },
+      select: { id: true, email: true },
+    });
+  } catch (erro) {
+    if (
+      erro instanceof Prisma.PrismaClientKnownRequestError &&
+      erro.code === "P2002"
+    ) {
+      return null;
+    }
+    throw erro;
+  }
 }
 
-export function tokenRevogado(tokenId: string): boolean {
+export async function tokenRevogado(tokenId: string): Promise<boolean> {
   return Boolean(
-    database
-      .prepare("SELECT 1 FROM revoked_tokens WHERE token_id = ?")
-      .get(tokenId),
+    await database.revokedToken.findUnique({ where: { tokenId } }),
   );
 }
 
-export function revogarToken(tokenId: string, expiresAt: number): void {
-  database
-    .prepare("DELETE FROM revoked_tokens WHERE expires_at <= ?")
-    .run(Math.floor(Date.now() / 1000));
-  database
-    .prepare("INSERT INTO revoked_tokens (token_id, expires_at) VALUES (?, ?)")
-    .run(tokenId, expiresAt);
+export async function revogarToken(
+  tokenId: string,
+  expiresAt: number,
+): Promise<void> {
+  await database.$transaction([
+    database.revokedToken.deleteMany({
+      where: { expiresAt: { lte: Math.floor(Date.now() / 1000) } },
+    }),
+    database.revokedToken.create({ data: { tokenId, expiresAt } }),
+  ]);
 }
